@@ -1,0 +1,1574 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>박신우 게임 클라이언트 포트폴리오</title>
+  <style>
+    :root {
+      --paper: #f7f8fb;
+      --ink: #171923;
+      --muted: #616775;
+      --line: #d7dbe4;
+      --panel: #ffffff;
+      --panel-soft: #eef1f6;
+      --accent: #d93535;
+      --accent-2: #0f7f8c;
+      --accent-3: #2e6e4f;
+      --dark: #11131a;
+      --dark-soft: #202432;
+      --white: #ffffff;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      background: #dfe3eb;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      font-family: "Pretendard", "Segoe UI", "Apple SD Gothic Neo", "Malgun Gothic", Arial, sans-serif;
+      letter-spacing: 0;
+      word-break: keep-all;
+      background: #dfe3eb;
+    }
+
+    .toolbar {
+      position: fixed;
+      top: 18px;
+      right: 18px;
+      z-index: 50;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      padding: 10px 12px;
+      border: 1px solid rgba(23, 25, 35, 0.16);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.92);
+      box-shadow: 0 14px 34px rgba(17, 19, 26, 0.18);
+      backdrop-filter: blur(10px);
+    }
+
+    .toolbar span {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .toolbar button {
+      min-height: 38px;
+      padding: 0 16px;
+      border: 0;
+      border-radius: 6px;
+      color: var(--white);
+      background: var(--dark);
+      font: inherit;
+      font-size: 13px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .deck {
+      width: min(1500px, calc(100% - 56px));
+      margin: 0 auto;
+      padding: 32px 0 54px;
+    }
+
+    .page {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 297 / 210;
+      min-height: 720px;
+      margin: 0 0 32px;
+      overflow: hidden;
+      border-radius: 8px;
+      background: var(--paper);
+      box-shadow: 0 24px 70px rgba(17, 19, 26, 0.22);
+      break-after: page;
+      page-break-after: always;
+    }
+
+    .page:last-child {
+      break-after: auto;
+      page-break-after: auto;
+    }
+
+    .page.dark {
+      color: var(--white);
+      background:
+        linear-gradient(135deg, #10131d 0%, #1b1f2d 42%, #361a1a 100%);
+    }
+
+    .page::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(90deg, rgba(17, 19, 26, 0.055) 1px, transparent 1px),
+        linear-gradient(180deg, rgba(17, 19, 26, 0.04) 1px, transparent 1px);
+      background-size: 34px 34px;
+      opacity: 0.38;
+    }
+
+    .page.dark::before {
+      background:
+        linear-gradient(90deg, rgba(255, 255, 255, 0.055) 1px, transparent 1px),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
+      opacity: 0.44;
+    }
+
+    .page::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 10px;
+      background: linear-gradient(180deg, var(--accent), var(--accent-2));
+    }
+
+    .inner {
+      position: relative;
+      z-index: 1;
+      height: 100%;
+      padding: 54px 64px 40px 76px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .cover-inner {
+      display: grid;
+      grid-template-columns: 0.9fr 1.1fr;
+      gap: 44px;
+      align-items: center;
+      height: 100%;
+    }
+
+    .eyebrow {
+      margin: 0 0 12px;
+      color: var(--accent);
+      font-size: 14px;
+      font-weight: 950;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .dark .eyebrow {
+      color: #ff6b61;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin: 0;
+    }
+
+    h1 {
+      color: inherit;
+      font-size: 72px;
+      line-height: 0.98;
+      letter-spacing: 0;
+    }
+
+    h2 {
+      color: inherit;
+      font-size: 42px;
+      line-height: 1.12;
+      letter-spacing: 0;
+    }
+
+    h3 {
+      color: var(--ink);
+      font-size: 21px;
+      line-height: 1.28;
+      letter-spacing: 0;
+    }
+
+    .dark h3 {
+      color: var(--white);
+    }
+
+    .lead {
+      max-width: 760px;
+      margin-top: 22px;
+      color: #dfe5ef;
+      font-size: 25px;
+      font-weight: 820;
+      line-height: 1.45;
+    }
+
+    .dark .lead {
+      color: #dfe5ef;
+    }
+
+    .summary-line {
+      margin-top: 22px;
+      color: var(--muted);
+      font-size: 18px;
+      font-weight: 760;
+      line-height: 1.55;
+    }
+
+    .dark .summary-line {
+      color: #c9d0de;
+    }
+
+    .cover-tags,
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .cover-tags {
+      margin-top: 30px;
+    }
+
+    .tag,
+    .role-chip {
+      display: inline-flex;
+      align-items: center;
+      min-height: 30px;
+      padding: 5px 10px;
+      border: 1px solid rgba(23, 25, 35, 0.14);
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.78);
+      color: var(--ink);
+      font-size: 13px;
+      font-weight: 880;
+      white-space: nowrap;
+    }
+
+    .dark .tag,
+    .dark .role-chip {
+      border-color: rgba(255, 255, 255, 0.18);
+      background: rgba(255, 255, 255, 0.08);
+      color: #f4f6fb;
+    }
+
+    .hero-shot,
+    .image-frame {
+      overflow: hidden;
+      border: 1px solid rgba(23, 25, 35, 0.12);
+      border-radius: 8px;
+      background: #11131a;
+    }
+
+    .hero-shot {
+      aspect-ratio: 16 / 9;
+      box-shadow: 0 22px 52px rgba(0, 0, 0, 0.35);
+    }
+
+    img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .fit-contain img,
+    img.fit-contain {
+      object-fit: contain;
+      background: #0e1119;
+    }
+
+    .page-head {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 24px;
+      align-items: start;
+      margin-bottom: 24px;
+    }
+
+    .page-no {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+    }
+
+    .dark .page-no {
+      color: #aeb6c7;
+    }
+
+    .profile-grid {
+      display: grid;
+      grid-template-columns: 0.92fr 1.08fr;
+      gap: 28px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .fact-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .fact {
+      display: grid;
+      grid-template-columns: 112px 1fr;
+      gap: 12px;
+      padding: 13px 15px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      font-size: 16px;
+      line-height: 1.4;
+    }
+
+    .fact strong {
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 950;
+      letter-spacing: 0.04em;
+    }
+
+    .section-card,
+    .metric-card,
+    .project-card,
+    .role-card,
+    .quote-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+    }
+
+    .section-card {
+      padding: 24px;
+      font-size: 18px;
+      font-weight: 720;
+      line-height: 1.55;
+    }
+
+    .section-card h3,
+    .project-card h3,
+    .role-card h3,
+    .quote-card h3 {
+      margin-bottom: 12px;
+    }
+
+    ul {
+      margin: 0;
+      padding-left: 20px;
+    }
+
+    li + li {
+      margin-top: 8px;
+    }
+
+    .skills-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .skill-box {
+      min-height: 78px;
+      padding: 13px 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel-soft);
+      font-size: 14px;
+      font-weight: 780;
+      line-height: 1.42;
+    }
+
+    .skill-box strong {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--accent-2);
+      font-size: 12px;
+      font-weight: 950;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .project-map {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-top: auto;
+    }
+
+    .metric-card {
+      min-height: 112px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .metric-card strong {
+      color: var(--accent);
+      font-size: 34px;
+      line-height: 1;
+    }
+
+    .metric-card span {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 820;
+      line-height: 1.35;
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 22px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .three-col {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .project-card {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    .project-card .image-frame {
+      height: 178px;
+      border: 0;
+      border-radius: 0;
+    }
+
+    .project-card .body {
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      flex: 1;
+    }
+
+    .project-card p,
+    .role-card p,
+    .quote-card p {
+      color: var(--muted);
+      font-size: 15px;
+      font-weight: 700;
+      line-height: 1.48;
+    }
+
+    .dark .project-card,
+    .dark .role-card,
+    .dark .section-card,
+    .dark .metric-card,
+    .dark .quote-card {
+      border-color: rgba(255, 255, 255, 0.16);
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .dark .project-card p,
+    .dark .role-card p,
+    .dark .quote-card p {
+      color: #cbd3df;
+    }
+
+    .dark .section-card {
+      color: #e8edf6;
+    }
+
+    .callout {
+      margin-top: auto;
+      padding: 17px 19px;
+      border-left: 5px solid var(--accent);
+      border-radius: 8px;
+      background: #fff1f1;
+      color: #4b2020;
+      font-size: 17px;
+      font-weight: 830;
+      line-height: 1.5;
+    }
+
+    .dark .callout {
+      background: rgba(217, 53, 53, 0.18);
+      color: #ffe4e4;
+    }
+
+    .role-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .role-card {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-height: 0;
+    }
+
+    .role-card .name {
+      color: var(--accent);
+      font-size: 23px;
+      font-weight: 950;
+      line-height: 1.1;
+    }
+
+    .dark .role-card .name {
+      color: #ff7a70;
+    }
+
+    .detail-table {
+      display: grid;
+      gap: 9px;
+      margin-top: 4px;
+    }
+
+    .detail-row {
+      display: grid;
+      grid-template-columns: 94px 1fr;
+      gap: 12px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      background: var(--panel-soft);
+      font-size: 14px;
+      font-weight: 760;
+      line-height: 1.42;
+    }
+
+    .detail-row strong {
+      color: var(--accent-2);
+      font-size: 12px;
+      font-weight: 950;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .dark .detail-row {
+      background: rgba(255, 255, 255, 0.08);
+      color: #e8edf6;
+    }
+
+    .dark .detail-row strong {
+      color: #75d9e4;
+    }
+
+    .wide-visual {
+      display: grid;
+      grid-template-columns: 1.14fr 0.86fr;
+      gap: 22px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .visual-stack {
+      display: grid;
+      grid-template-rows: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      min-height: 0;
+    }
+
+    .visual-stack .image-frame {
+      min-height: 0;
+    }
+
+    .logic-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .logic-item {
+      display: grid;
+      grid-template-columns: 34px 1fr;
+      gap: 12px;
+      align-items: start;
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      font-size: 15px;
+      font-weight: 780;
+      line-height: 1.45;
+    }
+
+    .logic-item b {
+      display: grid;
+      place-items: center;
+      width: 30px;
+      height: 30px;
+      border-radius: 6px;
+      background: var(--dark);
+      color: var(--white);
+      font-size: 13px;
+    }
+
+    .dark .logic-item {
+      border-color: rgba(255, 255, 255, 0.14);
+      background: rgba(255, 255, 255, 0.08);
+      color: #e8edf6;
+    }
+
+    .dark .logic-item b {
+      background: #ff6b61;
+      color: #1b1f2d;
+    }
+
+    .screen-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .screen-card {
+      min-height: 0;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .screen-card .image-frame {
+      height: 178px;
+      border: 0;
+      border-radius: 0;
+    }
+
+    .screen-card .caption {
+      padding: 12px 14px;
+      color: #dfe5ef;
+      font-size: 14px;
+      font-weight: 780;
+      line-height: 1.4;
+    }
+
+    .split-text-media {
+      display: grid;
+      grid-template-columns: 0.92fr 1.08fr;
+      gap: 22px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .media-quad {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-rows: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      min-height: 0;
+    }
+
+    .media-quad .image-frame {
+      min-height: 0;
+    }
+
+    .link-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 20px;
+    }
+
+    .link-box {
+      padding: 15px 16px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      color: var(--ink);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 830;
+      line-height: 1.35;
+      overflow-wrap: anywhere;
+    }
+
+    .link-box strong {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 950;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .quote-card {
+      padding: 22px;
+      font-size: 17px;
+      font-weight: 760;
+      line-height: 1.55;
+    }
+
+    .process-strip {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .process {
+      min-height: 94px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      font-size: 14px;
+      font-weight: 760;
+      line-height: 1.38;
+    }
+
+    .process strong {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--accent-2);
+      font-size: 12px;
+      font-weight: 950;
+    }
+
+
+    .cover-title {
+      display: grid;
+      gap: 18px;
+    }
+
+    .cover-role {
+      display: grid;
+      gap: 8px;
+      margin-top: 26px;
+      color: #dfe5ef;
+      font-size: 24px;
+      font-weight: 820;
+      line-height: 1.34;
+    }
+
+    .cover-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 28px;
+    }
+
+    .cover-links a {
+      display: inline-flex;
+      align-items: center;
+      min-height: 34px;
+      padding: 7px 12px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 6px;
+      color: #f4f6fb;
+      background: rgba(255, 255, 255, 0.08);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .scope-grid {
+      display: grid;
+      grid-template-columns: 0.9fr 1.1fr;
+      gap: 20px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .scope-list,
+    .evidence-list,
+    .question-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .scope-item,
+    .evidence-item,
+    .question-item {
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      font-size: 15px;
+      font-weight: 760;
+      line-height: 1.44;
+    }
+
+    .scope-item strong,
+    .evidence-item strong,
+    .question-item strong {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 950;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .case-grid {
+      display: grid;
+      grid-template-columns: 0.94fr 1.06fr;
+      gap: 18px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .case-grid.reverse {
+      grid-template-columns: 1.06fr 0.94fr;
+    }
+
+    .flow-row {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .flow-step {
+      min-height: 70px;
+      padding: 10px 11px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel-soft);
+      font-size: 13px;
+      font-weight: 790;
+      line-height: 1.34;
+    }
+
+    .flow-step strong {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--accent-2);
+      font-size: 11px;
+      font-weight: 950;
+      text-transform: uppercase;
+    }
+
+    .code-card {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #10131d;
+      color: #ecf1fb;
+    }
+
+    .code-card h3 {
+      margin: 0;
+      padding: 12px 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+      color: #ffffff;
+      font-size: 15px;
+      line-height: 1.2;
+    }
+
+    .code-card pre {
+      margin: 0;
+      padding: 13px 14px 15px;
+      overflow: hidden;
+      white-space: pre-wrap;
+      font-family: Consolas, "Cascadia Mono", monospace;
+      font-size: 11.3px;
+      line-height: 1.42;
+    }
+
+    .decision-card {
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      font-size: 15px;
+      font-weight: 740;
+      line-height: 1.5;
+    }
+
+    .decision-card h3 {
+      margin-bottom: 10px;
+    }
+
+    .decision-card + .decision-card,
+    .code-card + .decision-card,
+    .decision-card + .code-card {
+      margin-top: 12px;
+    }
+
+    .compact-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .compact-card {
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      font-size: 15px;
+      font-weight: 740;
+      line-height: 1.48;
+    }
+
+    .compact-card h3 {
+      margin-bottom: 10px;
+    }
+
+    .compact-card .image-frame {
+      height: 130px;
+      margin: 12px 0 0;
+    }
+
+    .note {
+      padding: 12px 14px;
+      border-left: 4px solid var(--accent);
+      border-radius: 8px;
+      background: #fff1f1;
+      color: #4b2020;
+      font-size: 14px;
+      font-weight: 800;
+      line-height: 1.45;
+    }
+
+    .dark .scope-item,
+    .dark .evidence-item,
+    .dark .question-item,
+    .dark .decision-card,
+    .dark .compact-card {
+      border-color: rgba(255, 255, 255, 0.16);
+      background: rgba(255, 255, 255, 0.08);
+      color: #e8edf6;
+    }
+
+    .dark .scope-item strong,
+    .dark .evidence-item strong,
+    .dark .question-item strong,
+    .dark .flow-step strong {
+      color: #75d9e4;
+    }
+
+    .dark .flow-step {
+      border-color: rgba(255, 255, 255, 0.14);
+      background: rgba(255, 255, 255, 0.08);
+      color: #e8edf6;
+    }
+
+    .dark .note {
+      background: rgba(217, 53, 53, 0.18);
+      color: #ffe4e4;
+    }
+
+    @page {
+      size: A4 landscape;
+      margin: 0;
+    }
+
+    @media print {
+      * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
+      html,
+      body {
+        width: auto !important;
+        min-height: auto !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: var(--paper) !important;
+      }
+
+      .toolbar {
+        display: none !important;
+      }
+
+      .deck {
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+
+      .page {
+        width: 297mm !important;
+        height: 210mm !important;
+        min-height: 210mm !important;
+        margin: 0 !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        break-after: page !important;
+        page-break-after: always !important;
+      }
+
+      .page:last-child {
+        break-after: auto !important;
+        page-break-after: auto !important;
+      }
+
+      .inner {
+        padding: 15mm 16mm 11mm 20mm !important;
+      }
+
+      h1 {
+        font-size: 42pt !important;
+      }
+
+      h2 {
+        font-size: 24pt !important;
+      }
+
+      h3 {
+        font-size: 13pt !important;
+      }
+
+      .lead {
+        font-size: 15pt !important;
+      }
+
+      .summary-line,
+      .section-card {
+        font-size: 10.5pt !important;
+      }
+
+      .project-card p,
+      .role-card p,
+      .quote-card p,
+      .fact,
+      .logic-item {
+        font-size: 9.2pt !important;
+      }
+
+      .project-card .image-frame,
+      .screen-card .image-frame {
+        height: 38mm !important;
+      }
+
+      .role-card {
+        padding: 4.5mm !important;
+      }
+
+      .section-card,
+      .quote-card {
+        padding: 5mm !important;
+      }
+
+      .detail-row,
+      .process,
+      .link-box {
+        font-size: 8.4pt !important;
+      }
+      .scope-item,
+      .evidence-item,
+      .question-item,
+      .decision-card,
+      .compact-card,
+      .flow-step {
+        font-size: 8.2pt !important;
+      }
+
+      .code-card h3 {
+        font-size: 8.5pt !important;
+        padding: 2.7mm 3.2mm !important;
+      }
+
+      .code-card pre {
+        font-size: 6.8pt !important;
+        line-height: 1.32 !important;
+        padding: 3mm 3.2mm !important;
+      }
+
+      li + li {
+        margin-top: 1.5mm !important;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .deck {
+        width: min(100% - 20px, 1500px);
+      }
+
+      .page {
+        min-height: auto;
+        aspect-ratio: auto;
+      }
+
+      .inner {
+        padding: 70px 24px 34px 28px;
+      }
+
+      .cover-inner,
+      .scope-grid,
+      .case-grid,
+      .case-grid.reverse,
+      .compact-grid,
+      .flow-row,
+      .profile-grid,
+      .project-map,
+      .two-col,
+      .three-col,
+      .role-grid,
+      .wide-visual,
+      .screen-grid,
+      .split-text-media,
+      .media-quad,
+      .link-grid,
+      .process-strip {
+        display: block;
+      }
+
+      .hero-shot,
+      .section-card,
+      .project-card,
+      .role-card,
+      .quote-card,
+      .metric-card,
+      .image-frame,
+      .screen-card,
+      .link-box,
+      .process {
+        margin-top: 14px;
+      }
+
+      h1 {
+        font-size: 52px;
+      }
+
+      h2 {
+        font-size: 32px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="toolbar" aria-label="PDF 저장 도구">
+    <span>A4 가로 기술 포트폴리오</span>
+    <button type="button" onclick="window.print()">PDF 저장</button>
+  </div>
+
+    <main class="deck">
+    <section class="page dark">
+      <div class="inner cover-inner">
+        <div class="cover-title">
+          <p class="eyebrow">Game Client Programmer Portfolio</p>
+          <h1>박신우<br>Game Client<br>Programmer</h1>
+          <div class="cover-role">
+            <span>C++ / Unreal Engine 5</span>
+            <span>Unity / Multiplayer</span>
+            <span>Gameplay & Debugging</span>
+          </div>
+          <div class="cover-tags">
+            <span class="tag">Unity WebGL</span>
+            <span class="tag">NGO / Relay</span>
+            <span class="tag">Unreal Engine 5</span>
+            <span class="tag">C++</span>
+            <span class="tag">TCP/IP</span>
+          </div>
+          <div class="cover-links">
+            <a href="https://github.com/AACHANJINAA/FlickDom" target="_blank" rel="noreferrer">FlickDom GitHub</a>
+            <a href="https://fantastic-pothos-5ab193.netlify.app/" target="_blank" rel="noreferrer">FlickDom WebGL</a>
+            <a href="https://www.youtube.com/watch?v=IR4KDTCyNKU" target="_blank" rel="noreferrer">Play Video</a>
+          </div>
+        </div>
+        <figure class="hero-shot">
+          <img src="assets/flickdom_FlickDom.png" alt="FlickDom 대표 화면">
+        </figure>
+      </div>
+    </section>
+
+    <section class="page">
+      <div class="inner">
+        <div class="page-head">
+          <div>
+            <p class="eyebrow">Profile</p>
+            <h2>기술 범위와 증명 가능한 프로젝트</h2>
+          </div>
+          <span class="page-no">02 / 10</span>
+        </div>
+        <div class="scope-grid">
+          <div class="section-card">
+            <h3>지원 분야</h3>
+            <p>신입/주니어 게임 클라이언트 프로그래머로 지원합니다. 포트폴리오의 중심은 프로젝트 소개가 아니라, 입력·물리·상태 전환·네트워크 동기화에서 실제로 부딪힌 문제와 해결 방식입니다.</p>
+            <div class="skills-grid">
+              <div class="skill-box"><strong>Language</strong>C++, C#, Python</div>
+              <div class="skill-box"><strong>Engine</strong>Unreal Engine 5, Unity</div>
+              <div class="skill-box"><strong>Gameplay</strong>Turn FSM, Collision, Pattern Matching</div>
+              <div class="skill-box"><strong>Network</strong>Host Authority, Snapshot, TCP/IP</div>
+            </div>
+          </div>
+          <div>
+            <div class="scope-list">
+              <div class="scope-item"><strong>FlickDom</strong>Unity WebGL 1대1 보드게임. Host 권위 Turn FSM, FlickRequest/PlacementRequest 검증, BoardState/ScoreState/CardState Snapshot, Client Prediction, PhysicsSettled 최종 보정.</div>
+              <div class="scope-item"><strong>Infection</strong>UE5 C++ 협동 TPS. BoneName 기반 좀비 피격 부위 분리, 다리 파괴 후 StartCrawling 전환, 트럭 탑승 중 이동 기준 문제 디버깅.</div>
+              <div class="scope-item"><strong>Other</strong>Pico2D State Machine/Behavior Tree/Collision, OpenGL TCP/IP Client/Server Packet와 AABB Collision.</div>
+              <div class="scope-item"><strong>Contact</strong>010-7390-1751 · tlsdn0403@gmail.com · github.com/tlsdn0403</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="page dark">
+      <div class="inner">
+        <div class="page-head">
+          <div>
+            <p class="eyebrow">FlickDom Ownership</p>
+            <h2>FlickDom에서 내가 맡은 코드 경계</h2>
+          </div>
+          <span class="page-no">03 / 10</span>
+        </div>
+        <div class="case-grid">
+          <div>
+            <div class="decision-card">
+              <h3>프로젝트 최소 설명</h3>
+              <p>FlickDom은 디스크를 튕겨 5x5 보드 칸을 점령하고, 카드 패턴과 점령 상태가 일치하면 점수를 얻는 1대1 WebGL 보드게임입니다. 매치는 3개 Stage로 진행되고, 9장의 카드를 시작 시 한 번 섞어 Stage별 3장씩 배분합니다.</p>
+            </div>
+            <div class="decision-card">
+              <h3>내 담당</h3>
+              <ul>
+                <li>Host 권위 Turn FSM과 멀티플레이 상태 전환</li>
+                <li>FlickRequest / PlacementRequest 검증 경로</li>
+                <li>BoardState / ScoreState / CardState Snapshot 적용</li>
+                <li>P2 Client Prediction, Host Transform 보정, PhysicsSettled 최종 Snapshot</li>
+                <li>WebGL Release 설정과 정적 호스팅 실행 검증</li>
+              </ul>
+            </div>
+          </div>
+          <div>
+            <figure class="image-frame"><img src="assets/flickdom_intro_2-1.png" alt="FlickDom 카드 목표 화면"></figure>
+            <div class="flow-row">
+              <div class="flow-step"><strong>임찬진</strong>Drag/Flick 입력, 카드 획득 연출, 초기 Host/Client 동기화 기반</div>
+              <div class="flow-step"><strong>박신우</strong>Host 권위 상태, 보드/카드/점수 Snapshot, WebGL Release</div>
+              <div class="flow-step"><strong>황인성</strong>보드/디스크/별/승리 UI 등 화면에 보이는 에셋</div>
+              <div class="flow-step"><strong>연결점</strong>입력과 에셋은 Host가 확정한 상태 메시지로 화면에 반영</div>
+            </div>
+            <div class="note" style="margin-top:12px;">면접에서 "이 코드는 네가 작성했나?"라는 질문이 나오면, 위 담당 범위와 함께 `FlickDomNetworkBootstrap`, `TurnBasedFlickPiece`, `TokenMapManager`, `PatternCardManager`의 캡처로 답할 수 있게 구성합니다.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="page">
+      <div class="inner">
+        <div class="page-head">
+          <div>
+            <p class="eyebrow">FlickDom Technical Case 01</p>
+            <h2>P2 Flick 예측과 Host 최종 판정</h2>
+          </div>
+          <span class="page-no">04 / 10</span>
+        </div>
+        <div class="case-grid reverse">
+          <div>
+            <div class="decision-card">
+              <h3>문제와 선택</h3>
+              <p>P2가 디스크를 튕긴 직후 Client 화면에서는 즉시 움직임이 보여야 하지만, 최종 결과는 Host 물리가 결정해야 했습니다. Client가 Host Transform만 기다리면 입력 반응이 늦고, Client 물리를 그대로 믿으면 Host와 결과가 달라집니다.</p>
+              <p style="margin-top:10px;">그래서 Client는 입력 직후 로컬 예측을 시작하고, Host에는 FlickRequest를 보냅니다. Host는 현재 턴, 소유자, 말 ID, impulse 범위를 검증한 뒤 물리를 실행합니다. 움직이는 중에는 Transform Snapshot을 적용하고, 정착 이후 PhysicsSettled Snapshot을 받아 예측을 종료합니다.</p>
+            </div>
+            <div class="flow-row">
+              <div class="flow-step"><strong>Client Input</strong>P2가 방향과 힘을 계산하고 즉시 예측 시작</div>
+              <div class="flow-step"><strong>FlickRequest</strong>owner, pieceId, direction, power, shotId 전송</div>
+              <div class="flow-step"><strong>Host Physics</strong>턴/소유자/힘 범위 검증 후 Rigidbody force 적용</div>
+              <div class="flow-step"><strong>Reconcile</strong>PhysicsSettled 최종 Snapshot으로 예측 종료</div>
+            </div>
+            <div class="question-list" style="margin-top:12px;">
+              <div class="question-item"><strong>면접 질문</strong>Client Prediction은 어디까지 허용하고, 어떤 상태부터 Host가 확정했나?</div>
+              <div class="question-item"><strong>면접 질문</strong>PhysicsSettled Snapshot은 일반 Transform Snapshot과 역할이 어떻게 다른가?</div>
+            </div>
+          </div>
+          <div>
+            <article class="code-card">
+              <h3>FlickRequest 전송 전 방향/힘 정규화</h3>
+<pre>public void SubmitFlickRequestToHost(
+    FlickDomPlayerId owner, string pieceId,
+    Vector3 impulse, uint shotId)
+{
+    FixedString64Bytes fixedPieceId =
+        new FixedString64Bytes(pieceId ?? string.Empty);
+
+    DecomposeFlickImpulse(impulse, out Vector3 dir, out float power);
+    NormalizeNetworkFlickCommand(dir, power, out dir, out power);
+
+    writer.WriteValueSafe((int)owner);
+    writer.WriteValueSafe(fixedPieceId);
+    writer.WriteValueSafe(dir);
+    writer.WriteValueSafe(power);
+    writer.WriteValueSafe(shotId);
+    SendNamedMessage(FlickRequestMessageName, ServerClientId, writer);
+}</pre>
+            </article>
+            <article class="code-card" style="margin-top:12px;">
+              <h3>PhysicsSettled 수신 후 예측 종료</h3>
+<pre>if (ShouldDiscardPieceSnapshot(state, round, turnIndex, true))
+    return;
+
+for (int i = 0; i &lt; pieceCount; i++)
+    ReadAndApplyPiecePhysicsState(ref reader, tick, timestamp, true);
+
+CompleteLocalFlickPrediction();</pre>
+            </article>
+            <div class="note" style="margin-top:12px;">정량 결과는 아직 문서에 없다. 오차 감소 수치나 RTT 평균은 [추가 측정 필요]로 남기고, 현재는 로그 캡처와 전후 영상으로 증명하는 구성이 맞습니다.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="page dark">
+      <div class="inner">
+        <div class="page-head">
+          <div>
+            <p class="eyebrow">FlickDom Technical Case 02</p>
+            <h2>보드 점령, 카드 판정, 상태 Snapshot</h2>
+          </div>
+          <span class="page-no">05 / 10</span>
+        </div>
+        <div class="case-grid">
+          <div>
+            <div class="decision-card">
+              <h3>문제</h3>
+              <p>보드 점령, 카드 완료, 점수 증가를 Client가 각각 계산하면 Host와 다른 결과가 나올 수 있습니다. 특히 카드 Stage가 넘어간 직후 이전 Snapshot이 늦게 들어오면 Client 화면이 이전 카드 상태로 되돌아갈 수 있습니다.</p>
+            </div>
+            <div class="decision-card">
+              <h3>해결 방법</h3>
+              <p>Client는 배치 의도만 PlacementRequest로 보내고, Host가 TokenMapManager.TryClaimCell로 점령 가능 여부와 재배치 source를 확정합니다. 이후 BoardState, ScoreState, CardState Snapshot을 전송하고 Client는 stale Snapshot을 거부한 뒤 화면만 갱신합니다.</p>
+            </div>
+            <div class="flow-row">
+              <div class="flow-step"><strong>Placement</strong>Client 클릭은 요청, 확정은 Host</div>
+              <div class="flow-step"><strong>BoardState</strong>5x5 owner grid를 Snapshot으로 적용</div>
+              <div class="flow-step"><strong>ScoreState</strong>점수와 승리자만 Host가 확정</div>
+              <div class="flow-step"><strong>CardState</strong>Stage, seed, claimedCards를 비교</div>
+            </div>
+          </div>
+          <div>
+            <article class="code-card">
+              <h3>점령/재배치 검증 지점</h3>
+<pre>FlickDomPlayerId previousOwner = owners[x, y];
+List&lt;Vector2Int&gt; playerCells = GetMutableCells(player);
+bool requiresRelocation =
+    limitOwnedCellsPerPlayer &amp;&amp;
+    playerCells.Count &gt;= maxTokensPerPlayer;
+
+if (requiresRelocation &amp;&amp; !relocationSource.HasValue)
+    return false;
+
+if (requiresRelocation &amp;&amp;
+    owners[source.x, source.y] != player)
+    return false;</pre>
+            </article>
+            <article class="code-card" style="margin-top:12px;">
+              <h3>이전 카드 Snapshot 거부</h3>
+<pre>if (cardDrawSeed == nextCardDrawSeed
+    &amp;&amp; nextDeckIndex &lt; currentFallbackDeckIndex)
+    return true;
+
+for (int i = 0; i &lt; claimedCards.Length; i++)
+{
+    if (claimedCards[i] &amp;&amp;
+        (i &gt;= nextClaimedCards.Count || !nextClaimedCards[i]))
+        return true;
+}</pre>
+            </article>
+            <div class="question-list" style="margin-top:12px;">
+              <div class="question-item"><strong>면접 질문</strong>BoardState, ScoreState, CardState를 나눠 보낸 이유는 무엇인가?</div>
+              <div class="question-item"><strong>면접 질문</strong>카드 셔플 Seed와 claimedCards가 어긋나면 어떤 문제가 생기는가?</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="page">
+      <div class="inner">
+        <div class="page-head">
+          <div>
+            <p class="eyebrow">Infection Technical Case 01</p>
+            <h2>BoneName 기반 좀비 피격 부위 분리</h2>
+          </div>
+          <span class="page-no">06 / 10</span>
+        </div>
+        <div class="case-grid">
+          <div>
+            <div class="decision-card">
+              <h3>문제와 기준</h3>
+              <p>좀비 피격을 단순 HP 감소로 처리하면 머리, 팔, 다리 같은 부위 파괴와 상태 전환을 만들기 어렵습니다. 그래서 FHitResult의 BoneName을 기준으로 피격 부위를 식별하고, 부위별 내구도는 TMap&lt;FName, float&gt;로 관리하는 구조를 사용했습니다.</p>
+            </div>
+            <div class="flow-row">
+              <div class="flow-step"><strong>Hit</strong>ApplyPointDamage</div>
+              <div class="flow-step"><strong>Locate</strong>FHitResult / BoneName</div>
+              <div class="flow-step"><strong>Damage</strong>TMap&lt;FName, float&gt;</div>
+              <div class="flow-step"><strong>State</strong>DismemberLimb / StartCrawling</div>
+            </div>
+            <div class="decision-card">
+              <h3>포트폴리오에 보여줄 코드</h3>
+              <p>ApplyPointDamage에서 FHitResult를 넘기는 부분, OnZombieDamaged에서 BoneName으로 내구도를 찾는 부분, 다리 계열 파괴 후 StartCrawling으로 전환하는 부분을 10~20줄 캡처로 넣습니다. 현재 이 작업 폴더에는 Infection C++ 원본이 없으므로 [코드 캡처 필요]로 표시합니다.</p>
+            </div>
+          </div>
+          <div class="visual-stack">
+            <figure class="image-frame fit-contain"><img src="assets/deck_image2.jpeg" alt="StartCrawling 흐름도"></figure>
+            <figure class="image-frame"><img src="assets/deck_image4.jpeg" alt="좀비 신체 분리 결과 화면"></figure>
+            <div class="question-list">
+              <div class="question-item"><strong>면접 질문</strong>월드 좌표가 아니라 BoneName 기준으로 판정한 이유는?</div>
+              <div class="question-item"><strong>면접 질문</strong>TMap&lt;FName, float&gt; 대신 enum 배열을 쓰면 어떤 차이가 있는가?</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="page">
+      <div class="inner">
+        <div class="page-head">
+          <div>
+            <p class="eyebrow">Infection Technical Case 02</p>
+            <h2>트럭 탑승 중 이동 기준 문제 디버깅</h2>
+          </div>
+          <span class="page-no">07 / 10</span>
+        </div>
+        <div class="case-grid reverse">
+          <div>
+            <div class="decision-card">
+              <h3>증상</h3>
+              <p>트럭 짐칸에 탑승한 플레이어가 튀거나 뒤로 밀리는 문제가 있었습니다. 처음에는 Mesh 충돌처럼 보였지만, 실제로는 충돌 구조와 이동 기준, 멀티플레이 위치 보정이 함께 얽힌 문제로 보았습니다.</p>
+            </div>
+            <div class="decision-card">
+              <h3>해결 방향</h3>
+              <p>매 프레임 위치를 보정하는 방식은 물리와 네트워크 보정이 다시 충돌할 수 있습니다. 트럭 위에 있을 때는 SetBase(NewBase)로 트럭 바닥을 이동 기준으로 잡고, 점프나 하차 시 SetBase(nullptr)와 상태 초기화를 수행하는 구조로 정리했습니다.</p>
+            </div>
+            <div class="flow-row">
+              <div class="flow-step"><strong>Symptom</strong>튀어 오름 / 뒤로 밀림</div>
+              <div class="flow-step"><strong>Separate</strong>충돌 문제와 이동 기준 문제 분리</div>
+              <div class="flow-step"><strong>Base</strong>트럭 바닥을 이동 기준으로 지정</div>
+              <div class="flow-step"><strong>Exit</strong>Jump / 하차 시 Base 해제</div>
+            </div>
+          </div>
+          <div>
+            <div class="media-quad">
+              <figure class="image-frame"><img src="assets/deck_image10.jpeg" alt="트럭 운전석 화면"></figure>
+              <figure class="image-frame"><img src="assets/deck_image11.jpeg" alt="트럭 적재함 탑승 화면"></figure>
+              <figure class="image-frame"><img src="assets/deck_image12.jpeg" alt="트럭 이동 화면"></figure>
+              <figure class="image-frame fit-contain"><img src="assets/deck_image13.jpeg" alt="Stage2 타일 풀 설계"></figure>
+            </div>
+            <div class="note" style="margin-top:12px;">SetBase(NewBase), SetBase(nullptr), 상태 초기화 코드는 [코드 캡처 필요]. 전후 영상이 있으면 이 페이지의 설득력이 크게 올라갑니다.</div>
+            <div class="question-list" style="margin-top:12px;">
+              <div class="question-item"><strong>면접 질문</strong>왜 단순 위치 보정이 아니라 Base 변경을 선택했나?</div>
+              <div class="question-item"><strong>면접 질문</strong>Jump/Exit 시 Base를 해제하지 않으면 어떤 문제가 생기나?</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="page">
+      <div class="inner">
+        <div class="page-head">
+          <div>
+            <p class="eyebrow">Other Projects</p>
+            <h2>기초 구현 경험: 2D FSM과 TCP/IP 동기화</h2>
+          </div>
+          <span class="page-no">08 / 10</span>
+        </div>
+        <div class="compact-grid">
+          <article class="compact-card">
+            <h3>Pico2D Hamtori Escape</h3>
+            <p>Python/Pico2D 기반 2D 탈출 게임입니다. 이 프로젝트는 대표 프로젝트처럼 많은 지면을 쓰기보다 Game Loop, State Machine, Behavior Tree, Collision 기본기를 보여주는 용도로 정리합니다.</p>
+            <ul style="margin-top:10px;">
+              <li>Stage별 목표와 충돌 판정</li>
+              <li>NPC 추격/배회 상태 전환</li>
+              <li>플레이어 입력과 화면 갱신 루프</li>
+            </ul>
+            <figure class="image-frame"><img src="assets/deck_image17.png" alt="햄토리 2스테이지 화면"></figure>
+          </article>
+          <article class="compact-card">
+            <h3>NGP Fall Guys Network</h3>
+            <p>C++ OpenGL 프로젝트에서 로컬 장애물 게임을 TCP/IP 기반 Client/Server 구조로 전환했습니다. 핵심 증거는 C2S_Character / S2C_Character Packet 흐름과 AABB Collision 판정입니다.</p>
+            <ul style="margin-top:10px;">
+              <li>Client / Server Packet 송수신</li>
+              <li>접속 순서 기반 캐릭터 번호 부여</li>
+              <li>캐릭터-캐릭터, 캐릭터-장애물 AABB Collision</li>
+            </ul>
+            <figure class="image-frame fit-contain"><img src="assets/deck_image20.png" alt="네트워크 게임 서버 클라이언트 흐름도"></figure>
+          </article>
+        </div>
+        <div class="note" style="margin-top:14px;">두 프로젝트는 대표 기술 사례가 아니라 기초 구현 경험입니다. 코드 캡처는 각 1개씩만 넣고, 남은 지면은 FlickDom과 Infection에 씁니다.</div>
+      </div>
+    </section>
+
+    <section class="page dark">
+      <div class="inner">
+        <div class="page-head">
+          <div>
+            <p class="eyebrow">Development Tools</p>
+            <h2>FlickDom에서 AI와 도구를 사용한 방식</h2>
+          </div>
+          <span class="page-no">09 / 10</span>
+        </div>
+        <div class="case-grid">
+          <div>
+            <div class="decision-card">
+              <h3>AI는 핵심 구현의 증거가 아니다</h3>
+              <p>FlickDom에서 AI 도구는 코드의 최종 판단자가 아니라 문서화와 점검 보조로 사용했습니다. 네트워크 판정, 보드 점령, 카드 동기화는 코드 캡처와 실행 로그로 증명하고, AI 사용은 개발 도구 영역에 짧게 둡니다.</p>
+            </div>
+            <div class="evidence-list">
+              <div class="evidence-item"><strong>Codex</strong>md 규칙 문서, 서버 계획, WebGL 빌드 조건을 비교하며 구현 누락 항목을 점검하는 용도로 사용.</div>
+              <div class="evidence-item"><strong>Unity MCP</strong>Editor 오브젝트와 컴포넌트 확인 작업을 보조. 최종 변경 여부는 Unity 실행 흐름과 코드 기준으로 다시 확인.</div>
+              <div class="evidence-item"><strong>VARCO AI</strong>버튼, 점수, 실패, 승리 효과음과 BGM 제작 보조. 사운드는 UI/Score/Victory 흐름에 리소스로 적용.</div>
+              <div class="evidence-item"><strong>WebGL Release</strong>Development Build, Script Debugging, Profiler, Deep Profiling을 끄고 Release 빌드 조건을 문서화.</div>
+            </div>
+          </div>
+          <div>
+            <div class="media-quad">
+              <figure class="image-frame"><img src="assets/flickdom_Project_MD.png" alt="FlickDom 문서 기반 작업 화면"></figure>
+              <figure class="image-frame"><img src="assets/flickdom_Unity_MCP.png" alt="Unity MCP 연동 화면"></figure>
+              <figure class="image-frame"><img src="assets/flickdom_Varco_EffectSound.png" alt="VARCO AI 효과음 제작 화면"></figure>
+              <figure class="image-frame"><img src="assets/flickdom_intro_4-1.png" alt="FlickDom 실행 화면"></figure>
+            </div>
+            <div class="note" style="margin-top:12px;">AI를 사용했다는 사실보다 "AI 제안을 어떻게 검증했는가"가 중요합니다. WebGL 실행 화면, 개발 로그, 코드 캡처를 함께 배치해야 AI가 대신 만든 포트폴리오처럼 보이지 않습니다.</div>
+            <div class="question-list" style="margin-top:12px;">
+              <div class="question-item"><strong>면접 질문</strong>AI가 제안한 내용을 그대로 넣지 않았다는 것을 어떻게 증명할 수 있나?</div>
+              <div class="question-item"><strong>면접 질문</strong>Unity MCP로 확인한 내용은 최종적으로 어떻게 검증했나?</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="page dark">
+      <div class="inner">
+        <div class="page-head">
+          <div>
+            <p class="eyebrow">Links & Evidence</p>
+            <h2>실행 링크와 추가로 보강할 증거</h2>
+          </div>
+          <span class="page-no">10 / 10</span>
+        </div>
+        <div class="case-grid">
+          <div class="section-card">
+            <h3>Contact</h3>
+            <p>박신우 · 게임 클라이언트 프로그래머<br>010-7390-1751 · tlsdn0403@gmail.com<br>GitHub: github.com/tlsdn0403</p>
+            <div class="link-grid">
+              <a class="link-box" href="https://github.com/AACHANJINAA/FlickDom" target="_blank" rel="noreferrer"><strong>FlickDom GitHub</strong>Code</a>
+              <a class="link-box" href="https://fantastic-pothos-5ab193.netlify.app/" target="_blank" rel="noreferrer"><strong>FlickDom WebGL</strong>Play</a>
+              <a class="link-box" href="https://www.youtube.com/watch?v=IR4KDTCyNKU" target="_blank" rel="noreferrer"><strong>FlickDom Video</strong>Demo</a>
+              <a class="link-box" href="https://github.com/tlsdn0403/SYJ" target="_blank" rel="noreferrer"><strong>Infection GitHub</strong>Code</a>
+              <a class="link-box" href="https://github.com/tlsdn0403/2DGP-Project" target="_blank" rel="noreferrer"><strong>Hamtori GitHub</strong>Code</a>
+              <a class="link-box" href="https://github.com/tlsdn0403/NGP_Project" target="_blank" rel="noreferrer"><strong>NGP GitHub</strong>Code</a>
+            </div>
+          </div>
+          <div>
+            <div class="evidence-list">
+              <div class="evidence-item"><strong>추가 측정 필요</strong>Flick Prediction 적용 전/후 오차 수치, RTT 평균, Snapshot 처리 로그.</div>
+              <div class="evidence-item"><strong>코드 캡처 필요</strong>Infection ApplyPointDamage, BoneName, TMap, DismemberLimb, StartCrawling.</div>
+              <div class="evidence-item"><strong>영상 필요</strong>P2 Flick 예측/보정 전후, 트럭 탑승 버그 전후.</div>
+              <div class="evidence-item"><strong>면접 대비</strong>Host 권위 선택 이유, stale Snapshot 거부 기준, SetBase 선택 이유, AI 결과 검증 방식.</div>
+            </div>
+            <figure class="image-frame" style="margin-top:14px;"><img src="assets/flickdom_intro_3-1.png" alt="FlickDom 멀티플레이 로비"></figure>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

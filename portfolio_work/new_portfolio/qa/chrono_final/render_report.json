@@ -1,0 +1,110 @@
+{
+  "pageCount": 10,
+  "imageCount": 13,
+  "brokenImages": [],
+  "coverImageCount": 0,
+  "pageBoxes": [
+    {
+      "page": 1,
+      "width": 1067,
+      "height": 754,
+      "overflow": []
+    },
+    {
+      "page": 2,
+      "width": 1067,
+      "height": 754,
+      "overflow": []
+    },
+    {
+      "page": 3,
+      "width": 1067,
+      "height": 754,
+      "overflow": []
+    },
+    {
+      "page": 4,
+      "width": 1067,
+      "height": 754,
+      "overflow": [
+        {
+          "tag": "DIV",
+          "className": "",
+          "text": "문제와 선택\n              P2가 디스크를 튕긴 직후 Client 화면에서는 즉시 움직임이 보여야 하지만, 최종 결과는 Host 물리"
+        },
+        {
+          "tag": "DIV",
+          "className": "",
+          "text": "FlickRequest 전송 전 방향/힘 정규화\npublic void SubmitFlickRequestToHost(\n    FlickDomPla"
+        },
+        {
+          "tag": "ARTICLE",
+          "className": "code-card",
+          "text": "PhysicsSettled 수신 후 예측 종료\nif (ShouldDiscardPieceSnapshot(state, round, turnIndex"
+        },
+        {
+          "tag": "PRE",
+          "className": "",
+          "text": "if (ShouldDiscardPieceSnapshot(state, round, turnIndex, true))\n    return;\n\nfor "
+        }
+      ]
+    },
+    {
+      "page": 5,
+      "width": 1067,
+      "height": 754,
+      "overflow": []
+    },
+    {
+      "page": 6,
+      "width": 1067,
+      "height": 754,
+      "overflow": []
+    },
+    {
+      "page": 7,
+      "width": 1067,
+      "height": 754,
+      "overflow": []
+    },
+    {
+      "page": 8,
+      "width": 1067,
+      "height": 754,
+      "overflow": []
+    },
+    {
+      "page": 9,
+      "width": 1067,
+      "height": 754,
+      "overflow": [
+        {
+          "tag": "DIV",
+          "className": "",
+          "text": "문서 기준으로 범위 파악 후 도구로 점검\n              FlickDom 작업 기록을 기준으로, md 문서에서 게임 규칙과 빌드 조건을"
+        },
+        {
+          "tag": "DIV",
+          "className": "evidence-list",
+          "text": "DocsAGENTS, CONTRIBUTING, DEVELOP_LOG, GAMEPLAY_RULES, WEBGL_BUILD, FLICK_BOARD_"
+        },
+        {
+          "tag": "DIV",
+          "className": "evidence-item",
+          "text": "Resource AssistBlender MCP, Substance MCP, VARCO AI로 보드/디스크/머티리얼/효과음/BGM 제작을 보조하"
+        },
+        {
+          "tag": "DIV",
+          "className": "",
+          "text": "Docs / Rule Checkmd 문서와 개발 로그로 게임 규칙, 작업 규칙, 빌드 조건을 확인한 화면\n              \n      "
+        }
+      ]
+    },
+    {
+      "page": 10,
+      "width": 1067,
+      "height": 754,
+      "overflow": []
+    }
+  ]
+}

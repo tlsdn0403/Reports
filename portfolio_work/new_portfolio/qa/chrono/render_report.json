@@ -1,0 +1,88 @@
+{
+  "pageCount": 10,
+  "imageCount": 13,
+  "brokenImages": [],
+  "pageBoxes": [
+    {
+      "page": 1,
+      "width": 1067,
+      "height": 754,
+      "overflow": []
+    },
+    {
+      "page": 2,
+      "width": 1067,
+      "height": 754,
+      "overflow": []
+    },
+    {
+      "page": 3,
+      "width": 1067,
+      "height": 754,
+      "overflow": []
+    },
+    {
+      "page": 4,
+      "width": 1067,
+      "height": 754,
+      "overflow": [
+        {
+          "tag": "DIV",
+          "className": "",
+          "text": "문제와 선택\n              P2가 디스크를 튕긴 직후 Client 화면에서는 즉시 움직임이 보여야 하지만, 최종 결과는 Host 물리"
+        },
+        {
+          "tag": "DIV",
+          "className": "",
+          "text": "FlickRequest 전송 전 방향/힘 정규화\npublic void SubmitFlickRequestToHost(\n    FlickDomPla"
+        },
+        {
+          "tag": "ARTICLE",
+          "className": "code-card",
+          "text": "PhysicsSettled 수신 후 예측 종료\nif (ShouldDiscardPieceSnapshot(state, round, turnIndex"
+        },
+        {
+          "tag": "PRE",
+          "className": "",
+          "text": "if (ShouldDiscardPieceSnapshot(state, round, turnIndex, true))\n    return;\n\nfor "
+        }
+      ]
+    },
+    {
+      "page": 5,
+      "width": 1067,
+      "height": 754,
+      "overflow": []
+    },
+    {
+      "page": 6,
+      "width": 1067,
+      "height": 754,
+      "overflow": []
+    },
+    {
+      "page": 7,
+      "width": 1067,
+      "height": 754,
+      "overflow": []
+    },
+    {
+      "page": 8,
+      "width": 1067,
+      "height": 754,
+      "overflow": []
+    },
+    {
+      "page": 9,
+      "width": 1067,
+      "height": 754,
+      "overflow": []
+    },
+    {
+      "page": 10,
+      "width": 1067,
+      "height": 754,
+      "overflow": []
+    }
+  ]
+}

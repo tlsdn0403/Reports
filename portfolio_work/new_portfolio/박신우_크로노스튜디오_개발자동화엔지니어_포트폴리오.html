@@ -1,0 +1,1766 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>박신우 크로노스튜디오 개발 자동화 엔지니어 포트폴리오</title>
+  <style>
+    :root {
+      --paper: #f5f7f2;
+      --ink: #111a17;
+      --muted: #5d665f;
+      --line: #d6ddd3;
+      --panel: #fbfcf8;
+      --panel-soft: #edf3ea;
+      --accent: #d7c63d;
+      --accent-2: #2f7555;
+      --accent-3: #18382c;
+      --dark: #07100d;
+      --dark-soft: #14231d;
+      --white: #ffffff;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      background: #dfe3eb;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      font-family: "Pretendard", "Segoe UI", "Apple SD Gothic Neo", "Malgun Gothic", Arial, sans-serif;
+      letter-spacing: 0;
+      word-break: keep-all;
+      background: #dfe3eb;
+    }
+
+    .toolbar {
+      position: fixed;
+      top: 18px;
+      right: 18px;
+      z-index: 50;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      padding: 10px 12px;
+      border: 1px solid rgba(23, 25, 35, 0.16);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.92);
+      box-shadow: 0 14px 34px rgba(17, 19, 26, 0.18);
+      backdrop-filter: blur(10px);
+    }
+
+    .toolbar span {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .toolbar button {
+      min-height: 38px;
+      padding: 0 16px;
+      border: 0;
+      border-radius: 6px;
+      color: var(--white);
+      background: var(--dark);
+      font: inherit;
+      font-size: 13px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .deck {
+      width: min(1500px, calc(100% - 56px));
+      margin: 0 auto;
+      padding: 32px 0 54px;
+    }
+
+    .page {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 297 / 210;
+      min-height: 720px;
+      margin: 0 0 32px;
+      overflow: hidden;
+      border-radius: 8px;
+      background: var(--paper);
+      box-shadow: 0 24px 70px rgba(17, 19, 26, 0.22);
+      break-after: page;
+      page-break-after: always;
+    }
+
+    .page:last-child {
+      break-after: auto;
+      page-break-after: auto;
+    }
+
+    .page.dark {
+      color: var(--white);
+      background:
+        linear-gradient(135deg, #07100d 0%, #121f1a 54%, #273d30 100%);
+    }
+
+    .page.cover-page {
+      background: #07100d;
+    }
+
+    .page::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(90deg, rgba(17, 19, 26, 0.055) 1px, transparent 1px),
+        linear-gradient(180deg, rgba(17, 19, 26, 0.04) 1px, transparent 1px);
+      background-size: 34px 34px;
+      opacity: 0.38;
+    }
+
+    .page.dark::before {
+      background:
+        linear-gradient(90deg, rgba(255, 255, 255, 0.055) 1px, transparent 1px),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
+      opacity: 0.44;
+    }
+
+    .page.cover-page::before {
+      opacity: 0;
+    }
+
+    .page::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 10px;
+      background: linear-gradient(180deg, var(--accent), var(--accent-2));
+    }
+
+    .page.cover-page::after {
+      display: none;
+    }
+
+    .inner {
+      position: relative;
+      z-index: 1;
+      height: 100%;
+      padding: 54px 64px 40px 76px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .cover-inner {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 72px;
+      align-items: center;
+      height: 100%;
+    }
+
+    .cover-inner::before {
+      content: "";
+      position: absolute;
+      top: 48px;
+      left: 76px;
+      width: 340px;
+      height: 4px;
+      background: #e2cf3d;
+    }
+
+    .eyebrow {
+      margin: 0 0 12px;
+      color: var(--accent-2);
+      font-size: 14px;
+      font-weight: 950;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .dark .eyebrow {
+      color: #e2cf3d;
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin: 0;
+    }
+
+    h1 {
+      color: inherit;
+      font-size: 72px;
+      line-height: 0.98;
+      letter-spacing: 0;
+    }
+
+    h2 {
+      color: inherit;
+      font-size: 42px;
+      line-height: 1.12;
+      letter-spacing: 0;
+    }
+
+    h3 {
+      color: var(--ink);
+      font-size: 21px;
+      line-height: 1.28;
+      letter-spacing: 0;
+    }
+
+    .dark h3 {
+      color: var(--white);
+    }
+
+    .lead {
+      max-width: 760px;
+      margin-top: 22px;
+      color: #dfe5ef;
+      font-size: 25px;
+      font-weight: 820;
+      line-height: 1.45;
+    }
+
+    .dark .lead {
+      color: #dfe5ef;
+    }
+
+    .summary-line {
+      margin-top: 22px;
+      color: var(--muted);
+      font-size: 18px;
+      font-weight: 760;
+      line-height: 1.55;
+    }
+
+    .dark .summary-line {
+      color: #c9d0de;
+    }
+
+    .cover-tags,
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .cover-tags {
+      margin-top: 30px;
+    }
+
+    .tag,
+    .role-chip {
+      display: inline-flex;
+      align-items: center;
+      min-height: 30px;
+      padding: 5px 10px;
+      border: 1px solid rgba(23, 25, 35, 0.14);
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.78);
+      color: var(--ink);
+      font-size: 13px;
+      font-weight: 880;
+      white-space: nowrap;
+    }
+
+    .dark .tag,
+    .dark .role-chip {
+      border-color: rgba(255, 255, 255, 0.18);
+      background: rgba(255, 255, 255, 0.08);
+      color: #f4f6fb;
+    }
+
+    .hero-shot,
+    .image-frame {
+      overflow: hidden;
+      border: 1px solid rgba(23, 25, 35, 0.12);
+      border-radius: 8px;
+      background: #11131a;
+    }
+
+    .hero-shot {
+      aspect-ratio: 16 / 9;
+      box-shadow: 0 22px 52px rgba(0, 0, 0, 0.35);
+    }
+
+    img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .fit-contain img,
+    img.fit-contain {
+      object-fit: contain;
+      background: #0e1119;
+    }
+
+    .page-head {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 24px;
+      align-items: start;
+      margin-bottom: 24px;
+    }
+
+    .page-no {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+    }
+
+    .dark .page-no {
+      color: #aeb6c7;
+    }
+
+    .profile-grid {
+      display: grid;
+      grid-template-columns: 0.92fr 1.08fr;
+      gap: 28px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .fact-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .fact {
+      display: grid;
+      grid-template-columns: 112px 1fr;
+      gap: 12px;
+      padding: 13px 15px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      font-size: 16px;
+      line-height: 1.4;
+    }
+
+    .fact strong {
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 950;
+      letter-spacing: 0.04em;
+    }
+
+    .section-card,
+    .metric-card,
+    .project-card,
+    .role-card,
+    .quote-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+    }
+
+    .section-card {
+      padding: 24px;
+      font-size: 18px;
+      font-weight: 720;
+      line-height: 1.55;
+    }
+
+    .section-card h3,
+    .project-card h3,
+    .role-card h3,
+    .quote-card h3 {
+      margin-bottom: 12px;
+    }
+
+    ul {
+      margin: 0;
+      padding-left: 20px;
+    }
+
+    li + li {
+      margin-top: 8px;
+    }
+
+    .skills-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .skill-box {
+      min-height: 78px;
+      padding: 13px 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel-soft);
+      font-size: 14px;
+      font-weight: 780;
+      line-height: 1.42;
+    }
+
+    .skill-box strong {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--accent-2);
+      font-size: 12px;
+      font-weight: 950;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .project-map {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-top: auto;
+    }
+
+    .metric-card {
+      min-height: 112px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .metric-card strong {
+      color: var(--accent);
+      font-size: 34px;
+      line-height: 1;
+    }
+
+    .metric-card span {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 820;
+      line-height: 1.35;
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 22px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .three-col {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .project-card {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    .project-card .image-frame {
+      height: 178px;
+      border: 0;
+      border-radius: 0;
+    }
+
+    .project-card .body {
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      flex: 1;
+    }
+
+    .project-card p,
+    .role-card p,
+    .quote-card p {
+      color: var(--muted);
+      font-size: 15px;
+      font-weight: 700;
+      line-height: 1.48;
+    }
+
+    .dark .project-card,
+    .dark .role-card,
+    .dark .section-card,
+    .dark .metric-card,
+    .dark .quote-card {
+      border-color: rgba(255, 255, 255, 0.16);
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .dark .project-card p,
+    .dark .role-card p,
+    .dark .quote-card p {
+      color: #cbd3df;
+    }
+
+    .dark .section-card {
+      color: #e8edf6;
+    }
+
+    .callout {
+      margin-top: auto;
+      padding: 17px 19px;
+      border-left: 5px solid var(--accent);
+      border-radius: 8px;
+      background: #f4edc3;
+      color: #2b2a15;
+      font-size: 17px;
+      font-weight: 830;
+      line-height: 1.5;
+    }
+
+    .dark .callout {
+      background: rgba(215, 198, 61, 0.16);
+      color: #f7f0bd;
+    }
+
+    .role-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .role-card {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-height: 0;
+    }
+
+    .role-card .name {
+      color: var(--accent);
+      font-size: 23px;
+      font-weight: 950;
+      line-height: 1.1;
+    }
+
+    .dark .role-card .name {
+      color: #ff7a70;
+    }
+
+    .detail-table {
+      display: grid;
+      gap: 9px;
+      margin-top: 4px;
+    }
+
+    .detail-row {
+      display: grid;
+      grid-template-columns: 94px 1fr;
+      gap: 12px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      background: var(--panel-soft);
+      font-size: 14px;
+      font-weight: 760;
+      line-height: 1.42;
+    }
+
+    .detail-row strong {
+      color: var(--accent-2);
+      font-size: 12px;
+      font-weight: 950;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .dark .detail-row {
+      background: rgba(255, 255, 255, 0.08);
+      color: #e8edf6;
+    }
+
+    .dark .detail-row strong {
+      color: #e2cf3d;
+    }
+
+    .wide-visual {
+      display: grid;
+      grid-template-columns: 1.14fr 0.86fr;
+      gap: 22px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .visual-stack {
+      display: grid;
+      grid-template-rows: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      min-height: 0;
+    }
+
+    .visual-stack .image-frame {
+      min-height: 0;
+    }
+
+    .logic-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .logic-item {
+      display: grid;
+      grid-template-columns: 34px 1fr;
+      gap: 12px;
+      align-items: start;
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      font-size: 15px;
+      font-weight: 780;
+      line-height: 1.45;
+    }
+
+    .logic-item b {
+      display: grid;
+      place-items: center;
+      width: 30px;
+      height: 30px;
+      border-radius: 6px;
+      background: var(--dark);
+      color: var(--white);
+      font-size: 13px;
+    }
+
+    .dark .logic-item {
+      border-color: rgba(255, 255, 255, 0.14);
+      background: rgba(255, 255, 255, 0.08);
+      color: #e8edf6;
+    }
+
+    .dark .logic-item b {
+      background: #e2cf3d;
+      color: #07100d;
+    }
+
+    .screen-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .screen-card {
+      min-height: 0;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .screen-card .image-frame {
+      height: 178px;
+      border: 0;
+      border-radius: 0;
+    }
+
+    .screen-card .caption {
+      padding: 12px 14px;
+      color: #dfe5ef;
+      font-size: 14px;
+      font-weight: 780;
+      line-height: 1.4;
+    }
+
+    .split-text-media {
+      display: grid;
+      grid-template-columns: 0.92fr 1.08fr;
+      gap: 22px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .media-quad {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-rows: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      min-height: 0;
+    }
+
+    .media-quad .image-frame {
+      min-height: 0;
+    }
+
+    .ai-workflow-page .media-quad {
+      gap: 14px;
+    }
+
+    .ai-shot {
+      display: grid;
+      grid-template-rows: minmax(0, 1fr) auto;
+      min-height: 0;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .ai-shot .image-frame {
+      border: 0;
+      border-radius: 0;
+      background: #07100d;
+    }
+
+    .ai-shot figcaption {
+      padding: 10px 12px 12px;
+      color: #dfe7e1;
+      font-size: 12.5px;
+      font-weight: 760;
+      line-height: 1.35;
+    }
+
+    .ai-shot figcaption strong {
+      display: block;
+      margin-bottom: 4px;
+      color: #e2cf3d;
+      font-size: 13px;
+      font-weight: 950;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .link-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 20px;
+    }
+
+    .link-box {
+      padding: 15px 16px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      color: var(--ink);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 830;
+      line-height: 1.35;
+      overflow-wrap: anywhere;
+    }
+
+    .link-box strong {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 950;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .quote-card {
+      padding: 22px;
+      font-size: 17px;
+      font-weight: 760;
+      line-height: 1.55;
+    }
+
+    .process-strip {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .process {
+      min-height: 94px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      font-size: 14px;
+      font-weight: 760;
+      line-height: 1.38;
+    }
+
+    .process strong {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--accent-2);
+      font-size: 12px;
+      font-weight: 950;
+    }
+
+
+    .cover-title {
+      display: grid;
+      gap: 20px;
+    }
+
+    .cover-role {
+      display: grid;
+      gap: 8px;
+      margin-top: 76px;
+      color: #bfc6c4;
+      font-size: 24px;
+      font-weight: 720;
+      line-height: 1.45;
+    }
+
+    .cover-card {
+      justify-self: end;
+      width: min(430px, 100%);
+      min-height: 300px;
+      padding: 56px 52px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 8px;
+      background: rgba(26, 41, 35, 0.76);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .cover-card .label {
+      margin-bottom: 20px;
+      color: #e2cf3d;
+      font-size: 22px;
+      font-weight: 900;
+    }
+
+    .cover-card .role-title {
+      color: #f3f5f1;
+      font-size: 48px;
+      font-weight: 950;
+      line-height: 1.16;
+    }
+
+    .cover-card .role-meta {
+      margin-top: 42px;
+      color: #bfc6c4;
+      font-size: 24px;
+      font-weight: 900;
+      line-height: 1.5;
+      text-transform: uppercase;
+    }
+
+    .duty-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 36px;
+      color: #d6ddd9;
+      font-size: 22px;
+      font-weight: 820;
+      line-height: 1.32;
+    }
+
+    .cover-foot {
+      position: absolute;
+      left: 76px;
+      right: 64px;
+      bottom: 24px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(255, 255, 255, 0.14);
+      color: rgba(245, 247, 244, 0.64);
+      font-size: 12px;
+      font-weight: 850;
+      letter-spacing: 0.04em;
+    }
+
+    .cover-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 28px;
+    }
+
+    .cover-links a {
+      display: inline-flex;
+      align-items: center;
+      min-height: 34px;
+      padding: 7px 12px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 6px;
+      color: #f4f6fb;
+      background: rgba(255, 255, 255, 0.08);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .scope-grid {
+      display: grid;
+      grid-template-columns: 0.9fr 1.1fr;
+      gap: 20px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .scope-list,
+    .evidence-list,
+    .question-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .scope-item,
+    .evidence-item,
+    .question-item {
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      font-size: 15px;
+      font-weight: 760;
+      line-height: 1.44;
+    }
+
+    .scope-item strong,
+    .evidence-item strong,
+    .question-item strong {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--accent-2);
+      font-size: 12px;
+      font-weight: 950;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .resource-lead {
+      max-width: 780px;
+      margin: -8px 0 18px;
+      color: #c8d0ce;
+      font-size: 22px;
+      font-weight: 660;
+      line-height: 1.38;
+    }
+
+    .resource-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+      flex: 1;
+      align-content: start;
+    }
+
+    .resource-card {
+      min-height: 118px;
+      padding: 24px 26px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 8px;
+      background: rgba(24, 40, 34, 0.82);
+      color: #eef2ef;
+      text-decoration: none;
+    }
+
+    .resource-card strong {
+      display: block;
+      color: #f5f7f4;
+      font-size: 24px;
+      font-weight: 950;
+      line-height: 1.25;
+    }
+
+    .resource-card .resource-type {
+      display: block;
+      margin-top: 10px;
+      color: #bec8c3;
+      font-size: 17px;
+      font-weight: 850;
+    }
+
+    .resource-card .resource-url {
+      display: block;
+      margin-top: 12px;
+      color: #f5f7f4;
+      font-size: 17px;
+      font-weight: 560;
+      line-height: 1.35;
+      word-break: break-all;
+    }
+
+    .case-grid {
+      display: grid;
+      grid-template-columns: 0.94fr 1.06fr;
+      gap: 18px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .case-grid.reverse {
+      grid-template-columns: 1.06fr 0.94fr;
+    }
+
+    .flow-row {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .flow-step {
+      min-height: 70px;
+      padding: 10px 11px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel-soft);
+      font-size: 13px;
+      font-weight: 790;
+      line-height: 1.34;
+    }
+
+    .flow-step strong {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--accent-2);
+      font-size: 11px;
+      font-weight: 950;
+      text-transform: uppercase;
+    }
+
+    .code-card {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #10131d;
+      color: #ecf1fb;
+    }
+
+    .code-card h3 {
+      margin: 0;
+      padding: 12px 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+      color: #ffffff;
+      font-size: 15px;
+      line-height: 1.2;
+    }
+
+    .code-card pre {
+      margin: 0;
+      padding: 13px 14px 15px;
+      overflow: hidden;
+      white-space: pre-wrap;
+      font-family: Consolas, "Cascadia Mono", monospace;
+      font-size: 11.3px;
+      line-height: 1.42;
+    }
+
+    .decision-card {
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      font-size: 15px;
+      font-weight: 740;
+      line-height: 1.5;
+    }
+
+    .decision-card h3 {
+      margin-bottom: 10px;
+    }
+
+    .decision-card + .decision-card,
+    .code-card + .decision-card,
+    .decision-card + .code-card {
+      margin-top: 12px;
+    }
+
+    .compact-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .compact-card {
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      font-size: 15px;
+      font-weight: 740;
+      line-height: 1.48;
+    }
+
+    .compact-card h3 {
+      margin-bottom: 10px;
+    }
+
+    .compact-card .image-frame {
+      height: 130px;
+      margin: 12px 0 0;
+    }
+
+    .other-projects-page .compact-grid {
+      gap: 18px;
+    }
+
+    .other-projects-page .compact-card {
+      display: flex;
+      flex-direction: column;
+      padding: 24px 26px;
+      font-size: 16px;
+      line-height: 1.52;
+    }
+
+    .other-projects-page .compact-card h3 {
+      margin-bottom: 12px;
+      font-size: 24px;
+    }
+
+    .other-projects-page .compact-card ul {
+      margin-top: 14px !important;
+    }
+
+    .other-projects-page .compact-card li + li {
+      margin-top: 10px;
+    }
+
+    .other-projects-page .compact-card .image-frame {
+      flex: 0 0 auto;
+      height: 245px;
+      min-height: 0;
+      margin-top: 18px;
+    }
+
+    .note {
+      padding: 12px 14px;
+      border-left: 4px solid var(--accent);
+      border-radius: 8px;
+      background: #f4edc3;
+      color: #2b2a15;
+      font-size: 14px;
+      font-weight: 800;
+      line-height: 1.45;
+    }
+
+    .dark .scope-item,
+    .dark .evidence-item,
+    .dark .question-item,
+    .dark .decision-card,
+    .dark .compact-card {
+      border-color: rgba(255, 255, 255, 0.16);
+      background: rgba(255, 255, 255, 0.08);
+      color: #e8edf6;
+    }
+
+    .dark .scope-item strong,
+    .dark .evidence-item strong,
+    .dark .question-item strong,
+    .dark .flow-step strong {
+      color: #e2cf3d;
+    }
+
+    .dark .flow-step {
+      border-color: rgba(255, 255, 255, 0.14);
+      background: rgba(255, 255, 255, 0.08);
+      color: #e8edf6;
+    }
+
+    .dark .note {
+      background: rgba(215, 198, 61, 0.16);
+      color: #f7f0bd;
+    }
+
+    @page {
+      size: A4 landscape;
+      margin: 0;
+    }
+
+    @media print {
+      * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
+      html,
+      body {
+        width: auto !important;
+        min-height: auto !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: var(--paper) !important;
+      }
+
+      .toolbar {
+        display: none !important;
+      }
+
+      .deck {
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+
+      .page {
+        width: 297mm !important;
+        height: 210mm !important;
+        min-height: 210mm !important;
+        margin: 0 !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        break-after: page !important;
+        page-break-after: always !important;
+      }
+
+      .page:last-child {
+        break-after: auto !important;
+        page-break-after: auto !important;
+      }
+
+      .inner {
+        padding: 15mm 16mm 11mm 20mm !important;
+      }
+
+      h1 {
+        font-size: 42pt !important;
+      }
+
+      h2 {
+        font-size: 24pt !important;
+      }
+
+      h3 {
+        font-size: 13pt !important;
+      }
+
+      .lead {
+        font-size: 15pt !important;
+      }
+
+      .summary-line,
+      .section-card {
+        font-size: 10.5pt !important;
+      }
+
+      .project-card p,
+      .role-card p,
+      .quote-card p,
+      .fact,
+      .logic-item {
+        font-size: 9.2pt !important;
+      }
+
+      .project-card .image-frame,
+      .screen-card .image-frame {
+        height: 38mm !important;
+      }
+
+      .role-card {
+        padding: 4.5mm !important;
+      }
+
+      .section-card,
+      .quote-card {
+        padding: 5mm !important;
+      }
+
+      .detail-row,
+      .process,
+      .link-box {
+        font-size: 8.4pt !important;
+      }
+      .scope-item,
+      .evidence-item,
+      .question-item,
+      .decision-card,
+      .compact-card,
+      .flow-step {
+        font-size: 8.2pt !important;
+      }
+
+      .code-card h3 {
+        font-size: 8.5pt !important;
+        padding: 2.7mm 3.2mm !important;
+      }
+
+      .code-card pre {
+        font-size: 6.8pt !important;
+        line-height: 1.32 !important;
+        padding: 3mm 3.2mm !important;
+      }
+
+      li + li {
+        margin-top: 1.5mm !important;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .deck {
+        width: min(100% - 20px, 1500px);
+      }
+
+      .page {
+        min-height: auto;
+        aspect-ratio: auto;
+      }
+
+      .inner {
+        padding: 70px 24px 34px 28px;
+      }
+
+      .cover-inner,
+      .scope-grid,
+      .case-grid,
+      .case-grid.reverse,
+      .compact-grid,
+      .flow-row,
+      .profile-grid,
+      .project-map,
+      .two-col,
+      .three-col,
+      .role-grid,
+      .wide-visual,
+      .screen-grid,
+      .split-text-media,
+      .media-quad,
+      .link-grid,
+      .resource-grid,
+      .process-strip {
+        display: block;
+      }
+
+      .hero-shot,
+      .section-card,
+      .project-card,
+      .role-card,
+      .quote-card,
+      .metric-card,
+      .image-frame,
+      .screen-card,
+      .link-box,
+      .resource-card,
+      .process {
+        margin-top: 14px;
+      }
+
+      h1 {
+        font-size: 52px;
+      }
+
+      h2 {
+        font-size: 32px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="toolbar" aria-label="PDF 저장 도구">
+    <span>A4 가로 개발 자동화 포트폴리오</span>
+    <button type="button" onclick="window.print()">PDF 저장</button>
+  </div>
+
+    <main class="deck">
+    <section class="page dark cover-page">
+      <div class="inner cover-inner">
+        <div class="cover-title">
+          <h1>박신우<br>개발 자동화<br>엔지니어</h1>
+        </div>
+        <div class="cover-card">
+          <div class="label">지원 업무</div>
+          <div class="role-title">AI 기반<br>개발 자동화</div>
+          <div class="duty-list">
+            <span>빌드·검증 절차 정리</span>
+            <span>개발 워크플로우 개선</span>
+            <span>게임 클라이언트 작업 지원</span>
+          </div>
+        </div>
+        <div class="cover-foot">PARK SHINWOO · DEVELOPMENT AUTOMATION PORTFOLIO</div>
+      </div>
+    </section>
+
+    <section class="page">
+      <div class="inner">
+        <div class="page-head">
+          <div>
+            <p class="eyebrow">Overview</p>
+            <h2>프로젝트별 작업 범위와 근거</h2>
+          </div>
+          <span class="page-no">02 / 10</span>
+        </div>
+        <div class="scope-grid">
+          <div class="section-card">
+            <h3>작업 기준</h3>
+            <p>각 프로젝트에서 확인 가능한 코드, 실행 결과, 문서 자료를 기준으로 정리했습니다. 기능 구현 사례와 빌드·검증 기록을 분리해 작업 범위가 드러나도록 구성했습니다.</p>
+            <div class="skills-grid">
+              <div class="skill-box"><strong>Build / Run</strong>WebGL 빌드 설정, 실행 조건, 체크리스트</div>
+              <div class="skill-box"><strong>Verification</strong>실행 화면, 영상, 개발 로그 기준 확인</div>
+              <div class="skill-box"><strong>Client Code</strong>Unity, UE5 C++, 게임 상태 처리</div>
+              <div class="skill-box"><strong>AI Tool Use</strong>문서 초안, 점검 목록, 에셋 제작 보조</div>
+            </div>
+          </div>
+          <div>
+            <div class="scope-list">
+              <div class="scope-item"><strong>FlickDom</strong>Unity WebGL 1대1 보드게임. WebGL 빌드 조건, 실행 검증 절차, Host 권위 Snapshot 적용 흐름을 문서와 코드 기준으로 정리했습니다.</div>
+              <div class="scope-item"><strong>감염:죽음의 도시</strong>Unreal Engine C++ 협동 TPS. 좀비 피격 부위 처리와 트럭 탑승 이동 기준 디버깅을 클라이언트 구현 사례로 정리했습니다.</div>
+              <div class="scope-item"><strong>Other</strong>Pico2D FSM/Behavior Tree와 OpenGL TCP/IP 프로젝트로 상태 전환, 충돌 판정, 위치 동기화 기본기를 정리했습니다.</div>
+              <div class="scope-item"><strong>Contact</strong>010-7390-1751 · tlsdn0403@gmail.com · github.com/tlsdn0403</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="page dark ai-workflow-page">
+      <div class="inner">
+        <div class="page-head">
+          <div>
+            <p class="eyebrow">Automation Case</p>
+            <h2>FlickDom 빌드와 실행 조건 정리</h2>
+          </div>
+          <span class="page-no">03 / 10</span>
+        </div>
+        <div class="case-grid">
+          <div>
+            <div class="decision-card">
+              <h3>문제</h3>
+              <p>FlickDom은 Unity WebGL, NGO, Relay, 정적 호스팅이 연결된 프로젝트입니다. 빌드 옵션과 실행 조건을 따로 정리하지 않으면 같은 결과를 다시 확인하기 어렵습니다.</p>
+            </div>
+            <div class="decision-card">
+              <h3>정리한 근거</h3>
+              <ul>
+                <li>`WEBGL_BUILD.md`: WebGL Release 메뉴, 빌드 전환 옵션, 로컬 실행 조건</li>
+                <li>NGO / Relay 기반 2인 멀티플레이 실행 조건 정리</li>
+                <li>Host 권위, 보드 점유, 카드/점수 동기화 체크리스트</li>
+                <li>`DEVELOP_LOG.md`: FlickRequest, PlacementRequest, PhysicsSettled 변경 이력</li>
+                <li>Release 빌드에서 Development Build, Script Debugging, Profiler, Deep Profiling 해제</li>
+              </ul>
+            </div>
+          </div>
+          <div>
+            <figure class="image-frame"><img src="assets/flickdom_intro_2-1.png" alt="FlickDom 카드 목표 화면"></figure>
+            <div class="flow-row">
+              <div class="flow-step"><strong>Build</strong>Release 메뉴와 WebGL 옵션 정리</div>
+              <div class="flow-step"><strong>Run</strong>정적 호스팅 실행 조건 분리</div>
+              <div class="flow-step"><strong>Sync</strong>Host 권위 Snapshot 항목 추적</div>
+              <div class="flow-step"><strong>Review</strong>개발 로그로 변경 이유 확인</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="page">
+      <div class="inner">
+        <div class="page-head">
+          <div>
+            <p class="eyebrow">Network Validation Case 01</p>
+            <h2>P2 Flick 예측과 Host 최종 판정</h2>
+          </div>
+          <span class="page-no">04 / 10</span>
+        </div>
+        <div class="case-grid reverse">
+          <div>
+            <div class="decision-card">
+              <h3>문제와 선택</h3>
+              <p>P2가 디스크를 튕긴 직후 Client 화면에서는 즉시 움직임이 보여야 하지만, 최종 결과는 Host 물리가 결정해야 했습니다. Client가 Host Transform만 기다리면 입력 반응이 늦고, Client 물리를 그대로 믿으면 Host와 결과가 달라집니다.</p>
+              <p style="margin-top:10px;">그래서 Client는 입력 직후 로컬 예측을 시작하고, Host에는 FlickRequest를 보냅니다. Host는 현재 턴, 소유자, 말 ID, impulse 범위를 검증한 뒤 물리를 실행합니다. 움직이는 중에는 Transform Snapshot을 적용하고, 정착 이후 PhysicsSettled Snapshot을 받아 예측을 종료합니다.</p>
+            </div>
+            <div class="flow-row">
+              <div class="flow-step"><strong>Client Input</strong>P2가 방향과 힘을 계산하고 즉시 예측 시작</div>
+              <div class="flow-step"><strong>FlickRequest</strong>owner, pieceId, direction, power, shotId 전송</div>
+              <div class="flow-step"><strong>Host Physics</strong>턴/소유자/힘 범위 검증 후 Rigidbody force 적용</div>
+              <div class="flow-step"><strong>Reconcile</strong>PhysicsSettled 최종 Snapshot으로 예측 종료</div>
+            </div>
+          </div>
+          <div>
+            <article class="code-card">
+              <h3>FlickRequest 전송 전 방향/힘 정규화</h3>
+<pre>public void SubmitFlickRequestToHost(
+    FlickDomPlayerId owner, string pieceId,
+    Vector3 impulse, uint shotId)
+{
+    FixedString64Bytes fixedPieceId =
+        new FixedString64Bytes(pieceId ?? string.Empty);
+
+    DecomposeFlickImpulse(impulse, out Vector3 dir, out float power);
+    NormalizeNetworkFlickCommand(dir, power, out dir, out power);
+
+    writer.WriteValueSafe((int)owner);
+    writer.WriteValueSafe(fixedPieceId);
+    writer.WriteValueSafe(dir);
+    writer.WriteValueSafe(power);
+    writer.WriteValueSafe(shotId);
+    SendNamedMessage(FlickRequestMessageName, ServerClientId, writer);
+}</pre>
+            </article>
+            <article class="code-card" style="margin-top:12px;">
+              <h3>PhysicsSettled 수신 후 예측 종료</h3>
+<pre>if (ShouldDiscardPieceSnapshot(state, round, turnIndex, true))
+    return;
+
+for (int i = 0; i &lt; pieceCount; i++)
+    ReadAndApplyPiecePhysicsState(ref reader, tick, timestamp, true);
+
+CompleteLocalFlickPrediction();</pre>
+            </article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="page dark">
+      <div class="inner">
+        <div class="page-head">
+          <div>
+            <p class="eyebrow">Network Validation Case 02</p>
+            <h2>보드 점령, 카드 판정, 상태 Snapshot</h2>
+          </div>
+          <span class="page-no">05 / 10</span>
+        </div>
+        <div class="case-grid">
+          <div>
+            <div class="decision-card">
+              <h3>문제</h3>
+              <p>보드 점령, 카드 완료, 점수 증가를 Client가 각각 계산하면 Host와 다른 결과가 나올 수 있습니다. 특히 카드 Stage가 넘어간 직후 이전 Snapshot이 늦게 들어오면 Client 화면이 이전 카드 상태로 되돌아갈 수 있습니다.</p>
+            </div>
+            <div class="decision-card">
+              <h3>해결 방법</h3>
+              <p>Client는 배치 의도만 PlacementRequest로 보내고, Host가 TokenMapManager.TryClaimCell로 점령 가능 여부와 재배치 source를 확정합니다. 이후 BoardState, ScoreState, CardState Snapshot을 전송하고 Client는 stale Snapshot을 거부한 뒤 화면만 갱신합니다.</p>
+            </div>
+            <div class="flow-row">
+              <div class="flow-step"><strong>Placement</strong>Client 클릭은 요청, 확정은 Host</div>
+              <div class="flow-step"><strong>BoardState</strong>5x5 owner grid를 Snapshot으로 적용</div>
+              <div class="flow-step"><strong>ScoreState</strong>점수와 승리자만 Host가 확정</div>
+              <div class="flow-step"><strong>CardState</strong>Stage, seed, claimedCards를 비교</div>
+            </div>
+          </div>
+          <div>
+            <article class="code-card">
+              <h3>점령/재배치 검증 지점</h3>
+<pre>FlickDomPlayerId previousOwner = owners[x, y];
+List&lt;Vector2Int&gt; playerCells = GetMutableCells(player);
+bool requiresRelocation =
+    limitOwnedCellsPerPlayer &amp;&amp;
+    playerCells.Count &gt;= maxTokensPerPlayer;
+
+if (requiresRelocation &amp;&amp; !relocationSource.HasValue)
+    return false;
+
+if (requiresRelocation &amp;&amp;
+    owners[source.x, source.y] != player)
+    return false;</pre>
+            </article>
+            <article class="code-card" style="margin-top:12px;">
+              <h3>이전 카드 Snapshot 거부</h3>
+<pre>if (cardDrawSeed == nextCardDrawSeed
+    &amp;&amp; nextDeckIndex &lt; currentFallbackDeckIndex)
+    return true;
+
+for (int i = 0; i &lt; claimedCards.Length; i++)
+{
+    if (claimedCards[i] &amp;&amp;
+        (i &gt;= nextClaimedCards.Count || !nextClaimedCards[i]))
+        return true;
+}</pre>
+            </article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="page">
+      <div class="inner">
+        <div class="page-head">
+          <div>
+            <p class="eyebrow">Unreal Engine C++</p>
+            <h2>감염:죽음의 도시 - 좀비 피격 부위 분리</h2>
+          </div>
+          <span class="page-no">06 / 10</span>
+        </div>
+        <div class="case-grid">
+          <div>
+            <div class="decision-card">
+              <h3>문제와 기준</h3>
+              <p>좀비 피격을 단순 HP 감소로 처리하면 머리, 팔, 다리 같은 부위 파괴와 상태 전환을 만들기 어렵습니다. 그래서 FHitResult의 BoneName을 기준으로 피격 부위를 식별하고, 부위별 내구도는 TMap&lt;FName, float&gt;로 관리하는 구조를 사용했습니다.</p>
+            </div>
+            <div class="flow-row">
+              <div class="flow-step"><strong>Hit</strong>ApplyPointDamage</div>
+              <div class="flow-step"><strong>Locate</strong>FHitResult / BoneName</div>
+              <div class="flow-step"><strong>Damage</strong>TMap&lt;FName, float&gt;</div>
+              <div class="flow-step"><strong>State</strong>DismemberLimb / StartCrawling</div>
+            </div>
+            <div class="decision-card">
+              <h3>구현 근거</h3>
+              <p>로컬 코드 기준으로 `FPSProjectile.cpp`의 `ApplyPointDamage`, `HealthComponent.cpp`의 `PointDamageTaken`, `BaseZombie.cpp`의 `OnZombieDamaged`, `ProcessBoneDamage`, `DismemberLimb`, `StartCrawling` 흐름을 확인할 수 있습니다. 네트워크 수신은 `HandleZombieDismember`에서 BoneName을 복원해 같은 시각 효과 경로로 연결합니다.</p>
+            </div>
+          </div>
+          <div class="visual-stack">
+            <figure class="image-frame fit-contain"><img src="assets/deck_image2.jpeg" alt="StartCrawling 흐름도"></figure>
+            <figure class="image-frame"><img src="assets/deck_image4.jpeg" alt="좀비 신체 분리 결과 화면"></figure>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="page">
+      <div class="inner">
+        <div class="page-head">
+          <div>
+            <p class="eyebrow">Unreal Engine C++</p>
+            <h2>감염:죽음의 도시 - 트럭 탑승 이동 기준 디버깅</h2>
+          </div>
+          <span class="page-no">07 / 10</span>
+        </div>
+        <div class="case-grid reverse">
+          <div>
+            <div class="decision-card">
+              <h3>증상</h3>
+              <p>트럭 짐칸에 탑승한 플레이어가 튀거나 뒤로 밀리는 문제가 있었습니다. 처음에는 Mesh 충돌처럼 보였지만, 실제로는 충돌 구조와 이동 기준, 멀티플레이 위치 보정이 함께 얽힌 문제로 보았습니다.</p>
+            </div>
+            <div class="decision-card">
+              <h3>해결 방향</h3>
+              <p>매 프레임 위치를 보정하는 방식은 물리와 네트워크 보정이 다시 충돌할 수 있습니다. 트럭 위에 있을 때는 SetBase(NewBase)로 트럭 바닥을 이동 기준으로 잡고, 점프나 하차 시 SetBase(nullptr)와 상태 초기화를 수행하는 구조로 정리했습니다.</p>
+            </div>
+            <div class="flow-row">
+              <div class="flow-step"><strong>Symptom</strong>튀어 오름 / 뒤로 밀림</div>
+              <div class="flow-step"><strong>Separate</strong>충돌과 이동 기준 문제 분리</div>
+              <div class="flow-step"><strong>Base</strong>트럭 바닥을 이동 기준으로 지정</div>
+              <div class="flow-step"><strong>Exit</strong>Jump / 하차 시 Base 해제</div>
+            </div>
+          </div>
+          <div>
+            <div class="media-quad">
+              <figure class="image-frame"><img src="assets/deck_image10.jpeg" alt="트럭 운전석 화면"></figure>
+              <figure class="image-frame"><img src="assets/deck_image11.jpeg" alt="트럭 적재함 탑승 화면"></figure>
+              <figure class="image-frame"><img src="assets/deck_image12.jpeg" alt="트럭 이동 화면"></figure>
+              <figure class="image-frame fit-contain"><img src="assets/deck_image13.jpeg" alt="Stage2 타일 풀 설계"></figure>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="page other-projects-page">
+      <div class="inner">
+        <div class="page-head">
+          <div>
+            <p class="eyebrow">Other Projects</p>
+            <h2>기초 구현 경험: 2D FSM과 TCP/IP 동기화</h2>
+          </div>
+          <span class="page-no">08 / 10</span>
+        </div>
+        <div class="compact-grid">
+          <article class="compact-card">
+            <h3>Pico2D Hamtori Escape</h3>
+            <p>Python/Pico2D 기반 2D 탈출 게임입니다. Game Loop, State Machine, Behavior Tree, Collision을 직접 구성하며 2D 게임 상태 전환과 충돌 처리 기본기를 정리했습니다.</p>
+            <ul style="margin-top:10px;">
+              <li>Stage별 목표와 충돌 판정</li>
+              <li>NPC 추격/배회 상태 전환</li>
+              <li>플레이어 입력과 화면 갱신 루프</li>
+            </ul>
+            <figure class="image-frame"><img src="assets/deck_image17.png" alt="햄토리 2스테이지 화면"></figure>
+          </article>
+          <article class="compact-card">
+            <h3>NGP Fall Guys Network</h3>
+            <p>C++ OpenGL 프로젝트에서 TCP/IP 기반 위치 동기화와 충돌 판정을 실습했습니다. 핵심 증거는 Character 송수신 흐름과 AABB Collision 판정입니다.</p>
+            <ul style="margin-top:10px;">
+              <li>Character 상태 송수신</li>
+              <li>접속 순서 기반 캐릭터 번호 부여</li>
+              <li>캐릭터-캐릭터, 캐릭터-장애물 AABB Collision</li>
+            </ul>
+            <figure class="image-frame fit-contain"><img src="assets/deck_image20.png" alt="네트워크 게임 흐름도"></figure>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="page dark">
+      <div class="inner">
+        <div class="page-head">
+          <div>
+            <p class="eyebrow">AI Workflow</p>
+            <h2>FlickDom AI 작업 흐름 정리</h2>
+          </div>
+          <span class="page-no">09 / 10</span>
+        </div>
+        <div class="case-grid">
+          <div>
+            <div class="decision-card">
+              <h3>문서 기준으로 범위 파악 후 도구로 점검</h3>
+              <p>FlickDom 작업 기록을 기준으로, md 문서에서 게임 규칙과 빌드 조건을 확인하고 Codex, Unity MCP, CLI로 구현 상태와 에디터 구성을 점검한 흐름을 정리했습니다.</p>
+            </div>
+            <div class="evidence-list">
+              <div class="evidence-item"><strong>Docs</strong>AGENTS, CONTRIBUTING, DEVELOP_LOG, GAMEPLAY_RULES, WEBGL_BUILD, FLICK_BOARD_AUTHORING으로 작업 규칙과 빌드 조건 확인.</div>
+              <div class="evidence-item"><strong>Codex / CLI</strong>md 검색, 로그 확인, 코드 분석, 파일 생성과 검증 작업을 반복 작업 점검에 사용.</div>
+              <div class="evidence-item"><strong>Unity MCP</strong>Unity Editor와 연결해 씬, 오브젝트, 컴포넌트 상태를 확인하고 최종 반영은 Unity 실행 기준으로 재확인.</div>
+              <div class="evidence-item"><strong>Resource Assist</strong>Blender MCP, Substance MCP, VARCO AI로 보드/디스크/머티리얼/효과음/BGM 제작을 보조하고 Unity 리소스로 정리.</div>
+            </div>
+          </div>
+          <div>
+            <div class="media-quad">
+              <figure class="ai-shot">
+                <div class="image-frame"><img src="assets/flickdom_Project_MD.png" alt="FlickDom 문서 기반 작업 화면"></div>
+                <figcaption><strong>Docs / Rule Check</strong>md 문서와 개발 로그로 게임 규칙, 작업 규칙, 빌드 조건을 확인한 화면</figcaption>
+              </figure>
+              <figure class="ai-shot">
+                <div class="image-frame"><img src="assets/flickdom_Unity_MCP.png" alt="Unity MCP 연동 화면"></div>
+                <figcaption><strong>Unity MCP</strong>Codex와 Unity Editor를 연결해 씬과 오브젝트 상태를 확인한 화면</figcaption>
+              </figure>
+              <figure class="ai-shot">
+                <div class="image-frame"><img src="assets/flickdom_Blender_MCP.png" alt="Blender MCP 리소스 제작 화면"></div>
+                <figcaption><strong>Blender MCP</strong>보드, 디스크, 소품 리소스 제작과 배치 방향을 점검한 화면</figcaption>
+              </figure>
+              <figure class="ai-shot">
+                <div class="image-frame"><img src="assets/flickdom_Varco_EffectSound.png" alt="VARCO AI 효과음 제작 화면"></div>
+                <figcaption><strong>VARCO AI</strong>버튼, 점수, 실패, 승리 효과음과 BGM 제작을 보조한 화면</figcaption>
+              </figure>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="page dark">
+      <div class="inner">
+        <div class="page-head">
+          <div>
+            <p class="eyebrow">Links</p>
+            <h2>프로젝트 링크 &amp; 자료</h2>
+          </div>
+          <span class="page-no">10 / 10</span>
+        </div>
+        <p class="resource-lead">프로젝트 코드, 플레이 링크, 영상 자료를 아래 링크에서 확인할 수 있습니다.</p>
+        <div class="resource-grid">
+          <a class="resource-card" href="https://fantastic-pothos-5ab193.netlify.app/" target="_blank" rel="noreferrer">
+            <strong>FlickDom</strong>
+            <span class="resource-type">WebGL Play</span>
+            <span class="resource-url">https://fantastic-pothos-5ab193.netlify.app/</span>
+          </a>
+          <a class="resource-card" href="https://www.youtube.com/watch?v=ddM9ggItGwQ" target="_blank" rel="noreferrer">
+            <strong>FlickDom</strong>
+            <span class="resource-type">Play Video</span>
+            <span class="resource-url">https://www.youtube.com/watch?v=ddM9ggItGwQ</span>
+          </a>
+          <a class="resource-card" href="https://github.com/AACHANJINAA/FlickDom" target="_blank" rel="noreferrer">
+            <strong>FlickDom</strong>
+            <span class="resource-type">GitHub</span>
+            <span class="resource-url">https://github.com/AACHANJINAA/FlickDom</span>
+          </a>
+          <a class="resource-card" href="https://github.com/tlsdn0403/SYJ" target="_blank" rel="noreferrer">
+            <strong>감염:죽음의 도시</strong>
+            <span class="resource-type">GitHub</span>
+            <span class="resource-url">https://github.com/tlsdn0403/SYJ</span>
+          </a>
+          <a class="resource-card" href="https://github.com/tlsdn0403/2DGP-Project" target="_blank" rel="noreferrer">
+            <strong>Hamtori Escape</strong>
+            <span class="resource-type">GitHub</span>
+            <span class="resource-url">https://github.com/tlsdn0403/2DGP-Project</span>
+          </a>
+          <a class="resource-card" href="https://github.com/tlsdn0403/NGP_Project" target="_blank" rel="noreferrer">
+            <strong>Network Game Programming</strong>
+            <span class="resource-type">GitHub</span>
+            <span class="resource-url">https://github.com/tlsdn0403/NGP_Project</span>
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
