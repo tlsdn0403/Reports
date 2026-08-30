@@ -1,0 +1,1000 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>박신우 넥토리얼 게임 클라이언트 포트폴리오</title>
+  <style>
+    :root {
+      --bg: #111820;
+      --panel: #192331;
+      --panel-2: #222b35;
+      --text: #f4f7fb;
+      --muted: #aeb9c8;
+      --line: rgba(255,255,255,.14);
+      --teal: #32c5b2;
+      --blue: #4aa3ff;
+      --gold: #ffb84d;
+      --red: #ff5d5d;
+      --green: #74d680;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: #0b0f14;
+      color: var(--text);
+      font-family: "Pretendard", "Noto Sans KR", "Malgun Gothic", Arial, sans-serif;
+    }
+
+    .page {
+      position: relative;
+      width: 1366px;
+      height: 768px;
+      overflow: hidden;
+      background:
+        linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(255,255,255,.03) 1px, transparent 1px),
+        radial-gradient(circle at 84% 20%, rgba(74,163,255,.25), transparent 18%),
+        radial-gradient(circle at 88% 86%, rgba(255,184,77,.16), transparent 15%),
+        var(--bg);
+      background-size: 80px 80px, 80px 80px, auto, auto, auto;
+      padding: 60px 78px;
+      page-break-after: always;
+    }
+
+    .page.light {
+      background:
+        linear-gradient(90deg, rgba(17,24,32,.04) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(17,24,32,.04) 1px, transparent 1px),
+        #f4f7fb;
+      color: #121a24;
+    }
+
+    .page.light .muted,
+    .page.light .eyebrow { color: #5b6573; }
+    .page.light .card,
+    .page.light .panel,
+    .page.light .project-card,
+    .page.light .metric,
+    .page.light .code {
+      background: #ffffff;
+      color: #121a24;
+      border-color: rgba(18,26,36,.12);
+    }
+    .page.light .line { background: rgba(18,26,36,.14); }
+
+    .page-no {
+      position: absolute;
+      right: 78px;
+      top: 42px;
+      font-size: 54px;
+      font-weight: 800;
+      color: rgba(244,247,251,.55);
+      letter-spacing: 0;
+    }
+
+    .page.light .page-no { color: rgba(18,26,36,.24); }
+
+    .eyebrow {
+      color: var(--muted);
+      font-size: 16px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0;
+      margin-bottom: 22px;
+    }
+
+    h1, h2, h3, p { margin: 0; }
+    h1 {
+      font-size: 70px;
+      line-height: 1.05;
+      letter-spacing: 0;
+      font-weight: 900;
+    }
+    h2 {
+      font-size: 54px;
+      line-height: 1.1;
+      letter-spacing: 0;
+      font-weight: 900;
+    }
+    h3 {
+      font-size: 28px;
+      line-height: 1.2;
+      letter-spacing: 0;
+      font-weight: 850;
+    }
+    p, li {
+      font-size: 22px;
+      line-height: 1.55;
+      letter-spacing: 0;
+      color: var(--muted);
+      word-break: keep-all;
+    }
+
+    ul {
+      margin: 0;
+      padding-left: 26px;
+    }
+
+    .muted { color: var(--muted); }
+    .accent { color: var(--teal); }
+    .blue { color: var(--blue); }
+    .gold { color: var(--gold); }
+    .red { color: var(--red); }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+      align-items: center;
+      height: 100%;
+    }
+
+    .layout.wide-left { grid-template-columns: 1.15fr .85fr; }
+    .layout.wide-right { grid-template-columns: .86fr 1.14fr; }
+    .top-space { padding-top: 42px; }
+
+    .stack { display: grid; gap: 22px; }
+    .stack.sm { gap: 14px; }
+    .stack.lg { gap: 32px; }
+
+    .card, .panel, .project-card, .metric, .code {
+      border: 1px solid var(--line);
+      background: rgba(25,35,49,.9);
+      border-radius: 8px;
+      padding: 24px;
+      box-shadow: 0 18px 45px rgba(0,0,0,.18);
+    }
+
+    .panel {
+      min-height: 96px;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 26px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      height: 42px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 0 18px;
+      background: rgba(255,255,255,.06);
+      color: var(--text);
+      font-size: 18px;
+      font-weight: 750;
+    }
+
+    .page.light .chip {
+      background: #e9edf3;
+      color: #121a24;
+      border-color: rgba(18,26,36,.08);
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap: 28px;
+      align-items: stretch;
+      margin-top: 42px;
+    }
+
+    .contact {
+      position: absolute;
+      left: 78px;
+      right: 78px;
+      bottom: 58px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+
+    .contact .card {
+      padding: 18px 20px;
+    }
+
+    .contact strong {
+      display: block;
+      font-size: 15px;
+      color: var(--muted);
+      margin-bottom: 8px;
+      letter-spacing: 0;
+    }
+
+    .contact span {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .hero-img,
+    .photo,
+    .thumb {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: #0c1118;
+    }
+
+    .photo.contain,
+    .thumb.contain { object-fit: contain; padding: 12px; }
+
+    .image-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+      height: 450px;
+    }
+
+    .image-grid.three {
+      grid-template-columns: repeat(3, 1fr);
+      height: 340px;
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+    }
+
+    .three-col {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+
+    .four-col {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
+    }
+
+    .project-card {
+      min-height: 208px;
+      display: grid;
+      gap: 16px;
+      align-content: start;
+    }
+
+    .project-card .num,
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: fit-content;
+      min-width: 44px;
+      height: 44px;
+      border-radius: 8px;
+      padding: 0 12px;
+      background: var(--teal);
+      color: #081014;
+      font-size: 18px;
+      font-weight: 900;
+    }
+
+    .badge.blue { background: var(--blue); color: #06131f; }
+    .badge.gold { background: var(--gold); color: #211305; }
+    .badge.red { background: var(--red); color: #250606; }
+    .badge.green { background: var(--green); color: #071407; }
+
+    .meta {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 18px;
+      margin-top: 24px;
+    }
+
+    .meta .metric {
+      min-height: 96px;
+      padding: 18px 20px;
+    }
+
+    .metric b {
+      display: block;
+      color: var(--muted);
+      font-size: 15px;
+      margin-bottom: 10px;
+    }
+
+    .metric span {
+      display: block;
+      color: var(--text);
+      font-size: 22px;
+      font-weight: 850;
+      line-height: 1.25;
+    }
+
+    .page.light .metric span { color: #121a24; }
+
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 14px;
+      margin-top: 54px;
+    }
+
+    .step {
+      min-height: 150px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.06);
+      border-radius: 8px;
+      padding: 20px;
+    }
+
+    .step .n {
+      color: var(--gold);
+      font-size: 26px;
+      font-weight: 900;
+      margin-bottom: 20px;
+    }
+
+    .step h3 {
+      font-size: 23px;
+      margin-bottom: 8px;
+    }
+
+    .step p {
+      font-size: 17px;
+      line-height: 1.4;
+    }
+
+    .code {
+      font-family: "Cascadia Mono", Consolas, monospace;
+      font-size: 20px;
+      line-height: 1.55;
+      white-space: pre-wrap;
+      color: #dfe8f3;
+    }
+
+    .page.light .code { color: #1b2531; }
+
+    .quote {
+      border-left: 6px solid var(--teal);
+      padding-left: 24px;
+      margin-top: 26px;
+    }
+
+    .quote p {
+      color: var(--text);
+      font-size: 28px;
+      font-weight: 800;
+      line-height: 1.45;
+    }
+
+    .page.light .quote p { color: #121a24; }
+
+    .kpi {
+      display: grid;
+      grid-template-columns: 160px 1fr;
+      gap: 22px;
+      align-items: center;
+      padding: 18px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .kpi:last-child { border-bottom: 0; }
+    .kpi strong {
+      font-size: 22px;
+      color: var(--text);
+    }
+    .page.light .kpi strong { color: #121a24; }
+
+    .kpi p {
+      font-size: 20px;
+    }
+
+    .line {
+      height: 1px;
+      background: var(--line);
+      margin: 26px 0;
+    }
+
+    .big-list {
+      display: grid;
+      gap: 18px;
+      margin-top: 28px;
+    }
+
+    .big-list .panel {
+      display: grid;
+      grid-template-columns: 120px 1fr;
+      gap: 20px;
+      align-items: start;
+      min-height: 94px;
+    }
+
+    .big-list .panel b {
+      font-size: 22px;
+      color: var(--text);
+    }
+
+    .page.light .big-list .panel b { color: #121a24; }
+
+    .big-list .panel p {
+      font-size: 20px;
+      line-height: 1.45;
+    }
+
+    .footer-note {
+      position: absolute;
+      left: 78px;
+      bottom: 42px;
+      color: var(--muted);
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .title-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .mini {
+      font-size: 18px;
+      line-height: 1.45;
+    }
+  </style>
+</head>
+<body>
+
+<section class="page" data-document-role="page" data-label="Cover">
+  <div class="page-no">01</div>
+  <div class="layout wide-left">
+    <div class="stack lg">
+      <div>
+        <div class="eyebrow">Game Client Portfolio</div>
+        <h1>Park Shin Woo<br><span class="accent">Client Programmer</span></h1>
+      </div>
+      <p>UE5 C++와 Unity C#을 기반으로 플레이 중 발생하는 문제를 추적하고, 구조적인 수정으로 게임 경험까지 연결하는 개발자를 지향합니다.</p>
+      <div class="chips">
+        <span class="chip">Nexon Tutorial</span>
+        <span class="chip">UE5 C++</span>
+        <span class="chip">Unity C#</span>
+        <span class="chip">Gameplay</span>
+        <span class="chip">Debugging</span>
+      </div>
+    </div>
+    <img class="hero-img contain" src="assets/deck_image1.png" alt="감염 죽음의 도시 대표 이미지">
+  </div>
+  <div class="contact">
+    <div class="card"><strong>E-Mail</strong><span>tlsdn0403@gmail.com</span></div>
+    <div class="card"><strong>GitHub</strong><span>github.com/tlsdn0403</span></div>
+    <div class="card"><strong>Portfolio Focus</strong><span>Problem Solving</span></div>
+  </div>
+</section>
+
+<section class="page" data-document-role="page" data-label="Introduce">
+  <div class="page-no">02</div>
+  <div class="layout wide-left">
+    <div>
+      <div class="eyebrow">Introduce</div>
+      <h2>문제를 끝까지 따라가<br>플레이 경험으로 바꾸는 개발자</h2>
+      <div class="quote">
+        <p>기능을 완성했다고 끝내지 않고, 실제 플레이에서 드러나는 충돌·동기화·상태 문제를 근거로 추적합니다.</p>
+      </div>
+    </div>
+    <div class="stack">
+      <div class="panel">
+        <h3>게임 클라이언트 방향성</h3>
+        <p>입력, 카메라, 충돌, 애니메이션, 네트워크 상태가 한 화면에서 자연스럽게 이어지는 구조를 고민합니다.</p>
+      </div>
+      <div class="panel">
+        <h3>대표 경험</h3>
+        <p>졸업작품에서는 전투 피격, 차량 탑승, 좀비 AI, 2스테이지 진행 구조를 UE5/C++로 구현했습니다.</p>
+      </div>
+      <div class="panel">
+        <h3>지원 포지션 적합성</h3>
+        <p>C++/C# 기반 구현, 디버깅, 팀 협업, AI 도구를 활용한 검토와 문서화 경험을 포트폴리오 안에서 증명합니다.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="page light" data-document-role="page" data-label="Tech Skills">
+  <div class="page-no">03</div>
+  <div class="layout wide-left">
+    <div>
+      <div class="eyebrow">Tech Skills</div>
+      <h2>현재 이런 구현을<br>할 수 있습니다</h2>
+      <p style="margin-top:28px;">퍼센트가 아니라 실제 프로젝트에서 맡았던 코드 경계와 문제 해결 사례로 기술을 설명합니다.</p>
+    </div>
+    <div class="stack sm">
+      <div class="kpi"><strong>UE5 / C++</strong><p>Actor, Component, Collision, LineTrace, Behavior Tree 기반 게임플레이 구현</p></div>
+      <div class="kpi"><strong>Unity / C#</strong><p>FSM, 턴 기반 로직, WebGL 멀티플레이, 클라이언트 예측 구조 경험</p></div>
+      <div class="kpi"><strong>Network</strong><p>Host Authority, Snapshot 동기화, TCP/IP 패킷 송수신 기초 구현</p></div>
+      <div class="kpi"><strong>Collaboration</strong><p>Git Flow, 머지 이슈 추적, 커밋 복구, 보고서 기반 작업 정리</p></div>
+      <div class="kpi"><strong>AI Tool</strong><p>문서 정리, 코드 검토, 원인 가설화 보조. 최종 판단은 코드와 실행 결과로 검증</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="page" data-document-role="page" data-label="Project List">
+  <div class="page-no">04</div>
+  <div class="eyebrow">Project</div>
+  <h2>프로젝트를 소개합니다</h2>
+  <div class="four-col" style="margin-top:46px;">
+    <div class="project-card">
+      <span class="num">01</span>
+      <h3>감염: 죽음의 도시</h3>
+      <p class="mini">UE5 C++ 협동 TPS 졸업작품. 전투 피격, 차량 상호작용, 좀비 AI, 2스테이지 진행 구조 담당.</p>
+    </div>
+    <div class="project-card">
+      <span class="num badge blue">02</span>
+      <h3>FlickDom</h3>
+      <p class="mini">Unity WebGL 1대1 보드게임. Host 권위 턴 FSM, Snapshot, Client Prediction 구현.</p>
+    </div>
+    <div class="project-card">
+      <span class="num badge gold">03</span>
+      <h3>NGP Fall Guys</h3>
+      <p class="mini">C++ OpenGL TCP/IP 프로젝트. 캐릭터 패킷, 충돌, 네트워크 동기화 기초 구현.</p>
+    </div>
+    <div class="project-card">
+      <span class="num badge green">04</span>
+      <h3>Hamtori Escape</h3>
+      <p class="mini">Pico2D 기반 2D 게임. Game Loop, State Machine, Collision, Stage 구성 경험.</p>
+    </div>
+  </div>
+</section>
+
+<section class="page" data-document-role="page" data-label="Project 01 Overview">
+  <div class="page-no">05</div>
+  <div class="layout wide-left">
+    <div class="stack">
+      <div>
+        <div class="eyebrow">Project 01</div>
+        <h2>감염: 죽음의 도시</h2>
+        <p style="margin-top:24px;">UE5/C++ 기반 협동 TPS 졸업작품입니다. 제한된 시간 안에서 실제 플레이 가능한 구조를 만들기 위해 전투, 차량, 좀비, 스테이지 흐름을 연결했습니다.</p>
+      </div>
+      <div class="meta">
+        <div class="metric"><b>기간</b><span>2025.12 - 2026.05</span></div>
+        <div class="metric"><b>구성</b><span>팀 졸업작품</span></div>
+        <div class="metric"><b>엔진</b><span>Unreal Engine 5 / C++</span></div>
+        <div class="metric"><b>역할</b><span>전투 · 차량 · AI · 스테이지</span></div>
+      </div>
+    </div>
+    <img class="hero-img contain" src="assets/deck_image1.png" alt="감염 죽음의 도시 로고">
+  </div>
+</section>
+
+<section class="page light" data-document-role="page" data-label="Infection Role">
+  <div class="page-no">06</div>
+  <div class="eyebrow">Project 01 · Role</div>
+  <h2>어떠한 역할을 수행했나요?</h2>
+  <div class="big-list">
+    <div class="panel"><b>전투 피드백</b><p>LineTrace 기반 총기 발사, FHitResult 전달, BoneName을 활용한 부위별 피격 판정 흐름을 구현했습니다.</p></div>
+    <div class="panel"><b>좀비 상태</b><p>팔·다리 부위 내구도와 신체 분리, 다리 파괴 후 기어가는 상태 전환을 연결했습니다.</p></div>
+    <div class="panel"><b>차량 상호작용</b><p>운전석, 짐칸, 아이템 적재, 기관총 사용을 동일 입력 안에서 분리해 처리했습니다.</p></div>
+    <div class="panel"><b>2스테이지</b><p>Stage 전환, 타일 기반 맵 진행, NavMesh/NavLink/FallZone 기반 좀비 이동 문제를 개선했습니다.</p></div>
+  </div>
+</section>
+
+<section class="page" data-document-role="page" data-label="Infection Combat">
+  <div class="page-no">07</div>
+  <div class="layout wide-right">
+    <div class="image-grid">
+      <img class="thumb" src="assets/deck_image4.jpeg" alt="좀비 피격 이미지">
+      <img class="thumb" src="assets/deck_image5.jpeg" alt="캐릭터 피격 테스트">
+      <img class="thumb contain" src="assets/deck_image7.jpeg" alt="피격 구조 메모">
+      <img class="thumb contain" src="assets/deck_image8.jpeg" alt="피격 구조 메모">
+    </div>
+    <div class="stack">
+      <div>
+        <div class="eyebrow">Project 01 · Combat</div>
+        <h2>BoneName 기반<br>좀비 부위 피격</h2>
+      </div>
+      <div class="panel">
+        <h3>문제점</h3>
+        <p>총알이 좀비 Mesh가 아니라 Capsule Collision에 먼저 맞아 HitResult의 BoneName이 None으로 들어왔습니다.</p>
+      </div>
+      <div class="panel">
+        <h3>개선점</h3>
+        <p>총알과 Capsule의 충돌 채널을 분리해 Mesh에서 피격 판정을 받도록 수정하고, BoneName을 부위 내구도와 연결했습니다.</p>
+      </div>
+      <div class="panel">
+        <h3>배운점</h3>
+        <p>게임플레이 버그는 코드만이 아니라 Collision 설정, Asset 구조, Animation 상태까지 함께 추적해야 해결됩니다.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="page" data-document-role="page" data-label="Infection Truck">
+  <div class="page-no">08</div>
+  <div class="layout wide-left">
+    <div class="stack">
+      <div>
+        <div class="eyebrow">Project 01 · Truck Interaction</div>
+        <h2>트럭 상호작용을<br>어떻게 나누었나요?</h2>
+      </div>
+      <div class="code">IInteractInterface
+UInteractTriggerComponent
+DriverSeat / CargoSeat / Turret / ItemStorage
+PlayerController-&gt;Possess(Truck)</div>
+      <p>처음에는 트럭 주변의 상호작용이 하나의 입력 흐름에 섞여 있었고, 운전·탑승·적재·기관총 사용이 서로 충돌했습니다. Trigger 타입을 나누고 접근 위치별 동작을 분리해 확장 가능한 구조로 정리했습니다.</p>
+    </div>
+    <div class="image-grid">
+      <img class="thumb" src="assets/deck_image9.jpeg" alt="트럭 적재">
+      <img class="thumb" src="assets/deck_image10.jpeg" alt="트럭 전면">
+      <img class="thumb" src="assets/deck_image11.jpeg" alt="트럭 탑승">
+      <img class="thumb" src="assets/deck_image12.jpeg" alt="트럭 주행">
+    </div>
+  </div>
+</section>
+
+<section class="page light" data-document-role="page" data-label="Infection Stage 2">
+  <div class="page-no">09</div>
+  <div class="layout wide-right">
+    <div class="image-grid">
+      <img class="thumb contain" src="assets/deck_image13.jpeg" alt="타일 설계 스케치">
+      <img class="thumb" src="assets/deck_image14.jpeg" alt="스테이지 맵">
+      <img class="thumb" src="assets/deck_image15.jpeg" alt="2스테이지 플레이">
+      <img class="thumb contain" src="assets/deck_image20.png" alt="구조 메모">
+    </div>
+    <div class="stack">
+      <div>
+        <div class="eyebrow">Project 01 · Stage Flow</div>
+        <h2>2스테이지 맵 진행 구조</h2>
+      </div>
+      <div class="panel">
+        <h3>초기 접근</h3>
+        <p>TileMarker의 Entry, Trigger, Exit Point를 기준으로 트럭 진행에 맞춰 다음 타일을 로드했습니다.</p>
+      </div>
+      <div class="panel">
+        <h3>구조 변경</h3>
+        <p>실시간 동적 로딩의 부담을 줄이기 위해 타일을 미리 로드하고, 필요 시 위치를 재배치하는 풀링 방식으로 전환했습니다.</p>
+      </div>
+      <div class="panel">
+        <h3>AI 이동 보완</h3>
+        <p>NavMesh, NavLinkProxy, FallZone을 사용해 건물 위 좀비가 트럭 진행에 맞춰 추격하고 낙하하도록 조정했습니다.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="page" data-document-role="page" data-label="Infection Problem Solving">
+  <div class="page-no">10</div>
+  <div class="eyebrow">Project 01 · Problem Solving</div>
+  <h2>문제를 해결한 방식</h2>
+  <div class="flow">
+    <div class="step"><div class="n">1</div><h3>증상 재현</h3><p>플레이 중 발생한 튕김, 미동작, 추격 실패를 먼저 반복 확인</p></div>
+    <div class="step"><div class="n">2</div><h3>상태 추적</h3><p>HitResult, Collision, BT Task, Vehicle 상태를 구간별 확인</p></div>
+    <div class="step"><div class="n">3</div><h3>원인 분리</h3><p>코드, 물리, 애셋, 네비게이션 중 어느 층의 문제인지 분리</p></div>
+    <div class="step"><div class="n">4</div><h3>구조 변경</h3><p>충돌 채널, Trigger 타입, Tile Pool처럼 구조 자체를 조정</p></div>
+    <div class="step"><div class="n">5</div><h3>플레이 검증</h3><p>실행 화면과 반복 테스트로 수정 결과를 확인</p></div>
+  </div>
+  <div class="chips">
+    <span class="chip">BoneName 판정</span>
+    <span class="chip">트럭 탑승 충돌</span>
+    <span class="chip">BT 추격</span>
+    <span class="chip">Tile Pooling</span>
+    <span class="chip">Git Cherry-pick 복구</span>
+  </div>
+</section>
+
+<section class="page" data-document-role="page" data-label="Project 02 Overview">
+  <div class="page-no">11</div>
+  <div class="layout wide-left">
+    <div class="stack">
+      <div>
+        <div class="eyebrow">Project 02</div>
+        <h2>FlickDom</h2>
+        <p style="margin-top:24px;">디스크를 튕겨 5x5 보드 칸을 점령하고, 카드 패턴과 보드 상태가 일치하면 점수를 얻는 Unity WebGL 1대1 보드게임입니다.</p>
+      </div>
+      <div class="meta">
+        <div class="metric"><b>엔진</b><span>Unity / C#</span></div>
+        <div class="metric"><b>플랫폼</b><span>WebGL</span></div>
+        <div class="metric"><b>역할</b><span>Network · Turn · Board</span></div>
+        <div class="metric"><b>핵심</b><span>Host Authority</span></div>
+      </div>
+    </div>
+    <img class="hero-img" src="assets/flickdom_FlickDom.png" alt="FlickDom 메인 화면">
+  </div>
+</section>
+
+<section class="page light" data-document-role="page" data-label="FlickDom Role">
+  <div class="page-no">12</div>
+  <div class="eyebrow">Project 02 · Role</div>
+  <h2>어떠한 역할을 수행했나요?</h2>
+  <div class="two-col" style="margin-top:38px;">
+    <div class="panel">
+      <h3>Host 권위 턴 구조</h3>
+      <p>턴 시작, Flick 요청, 물리 안정화, 점수 계산, 다음 턴 전환이 Host 기준으로만 확정되도록 설계했습니다.</p>
+    </div>
+    <div class="panel">
+      <h3>요청 검증</h3>
+      <p>FlickRequest와 PlacementRequest에서 소유자, 턴 상태, 입력 값, 배치 가능 여부를 검증했습니다.</p>
+    </div>
+    <div class="panel">
+      <h3>Snapshot 동기화</h3>
+      <p>BoardState, ScoreState, CardState를 Snapshot으로 전달해 클라이언트 화면을 동일하게 맞췄습니다.</p>
+    </div>
+    <div class="panel">
+      <h3>Client Prediction</h3>
+      <p>입력 즉시 조작감을 주되, PhysicsSettled 이후 Host 결과로 최종 보정하는 흐름을 적용했습니다.</p>
+    </div>
+  </div>
+  <img class="photo" style="height:230px; margin-top:28px;" src="assets/flickdom_intro_2-1.png" alt="FlickDom 카드 목표 화면">
+</section>
+
+<section class="page" data-document-role="page" data-label="FlickDom Network">
+  <div class="page-no">13</div>
+  <div class="layout wide-right">
+    <img class="hero-img" src="assets/flickdom_intro_3-1.png" alt="FlickDom 멀티플레이 로비">
+    <div class="stack">
+      <div>
+        <div class="eyebrow">Project 02 · Network</div>
+        <h2>멀티플레이 턴을<br>어떻게 안정화했나요?</h2>
+      </div>
+      <div class="code">Client Input
+→ Request Validation
+→ Host Simulation
+→ PhysicsSettled
+→ Board / Score / Card Snapshot
+→ Client Correction</div>
+      <p>클라이언트가 입력을 보냈다고 바로 결과를 확정하지 않고, Host가 검증한 뒤 물리 결과와 보드 점령 상태를 Snapshot으로 내려주는 구조로 정리했습니다.</p>
+    </div>
+  </div>
+</section>
+
+<section class="page" data-document-role="page" data-label="FlickDom Board Sync">
+  <div class="page-no">14</div>
+  <div class="layout wide-left">
+    <div class="stack">
+      <div>
+        <div class="eyebrow">Project 02 · Board/Card</div>
+        <h2>보드와 카드 상태 동기화</h2>
+      </div>
+      <div class="panel"><h3>BoardState</h3><p>5x5 보드의 칸 점령자를 관리하고, 디스크 충돌 이후 최종 칸 소유권을 계산했습니다.</p></div>
+      <div class="panel"><h3>ScoreState</h3><p>카드 패턴과 보드 상태가 일치하는지 검사해 점수 반영 시점을 Host 기준으로 통제했습니다.</p></div>
+      <div class="panel"><h3>CardState</h3><p>초기 9장 카드 셔플과 Stage별 3장 배분 결과가 클라이언트마다 달라지지 않도록 동기화했습니다.</p></div>
+    </div>
+    <div class="image-grid">
+      <img class="thumb" src="assets/flickdom_intro_2-1.png" alt="카드 화면">
+      <img class="thumb" src="assets/flickdom_intro_2-2.png" alt="보드 화면">
+      <img class="thumb" src="assets/flickdom_intro_2-3.png" alt="승리 화면">
+      <img class="thumb" src="assets/flickdom_intro_3-4.png" alt="방 코드 화면">
+    </div>
+  </div>
+</section>
+
+<section class="page light" data-document-role="page" data-label="FlickDom Lessons">
+  <div class="page-no">15</div>
+  <div class="eyebrow">Project 02 · Learn From Key Roles</div>
+  <h2>역할을 수행하며 배운 점</h2>
+  <div class="big-list">
+    <div class="panel"><b>문제점</b><p>WebGL 멀티플레이에서는 입력 반응성과 Host 권위 결과가 충돌할 수 있어, 조작감과 정합성을 동시에 고려해야 했습니다.</p></div>
+    <div class="panel"><b>개선점</b><p>Client Prediction으로 조작 반응을 먼저 보여주고, Host Snapshot으로 최종 보정하는 구조를 적용했습니다.</p></div>
+    <div class="panel"><b>배운점</b><p>네트워크 게임에서는 “누가 결과를 확정하는가”를 명확히 해야 버그 추적과 팀원 간 의사소통이 쉬워집니다.</p></div>
+  </div>
+  <div class="image-grid three" style="margin-top:28px;">
+    <img class="thumb" src="assets/flickdom_Project_MD.png" alt="FlickDom 문서">
+    <img class="thumb" src="assets/flickdom_Unity_MCP.png" alt="Unity MCP">
+    <img class="thumb" src="assets/flickdom_intro_4-1.png" alt="FlickDom 실행">
+  </div>
+</section>
+
+<section class="page" data-document-role="page" data-label="Project 03 Overview">
+  <div class="page-no">16</div>
+  <div class="layout wide-left">
+    <div class="stack">
+      <div>
+        <div class="eyebrow">Project 03</div>
+        <h2>NGP Fall Guys Network</h2>
+        <p style="margin-top:24px;">C++ OpenGL 기반으로 진행한 네트워크 게임 프로그래밍 프로젝트입니다. TCP/IP 통신, 캐릭터 패킷, 충돌 처리의 기초를 직접 구현했습니다.</p>
+      </div>
+      <div class="meta">
+        <div class="metric"><b>언어</b><span>C++</span></div>
+        <div class="metric"><b>그래픽</b><span>OpenGL</span></div>
+        <div class="metric"><b>네트워크</b><span>TCP/IP Socket</span></div>
+        <div class="metric"><b>역할</b><span>Packet · Collision</span></div>
+      </div>
+    </div>
+    <img class="hero-img" src="assets/deck_image21.png" alt="NGP 네트워크 게임 화면">
+  </div>
+</section>
+
+<section class="page light" data-document-role="page" data-label="NGP Packet">
+  <div class="page-no">17</div>
+  <div class="eyebrow">Project 03 · Network</div>
+  <h2>네트워크 요소를 어떻게 구현했나요?</h2>
+  <div class="flow">
+    <div class="step"><div class="n">1</div><h3>입력</h3><p>로컬 플레이어 이동 입력 수집</p></div>
+    <div class="step"><div class="n">2</div><h3>C2S</h3><p>캐릭터 위치와 상태를 서버로 전송</p></div>
+    <div class="step"><div class="n">3</div><h3>처리</h3><p>서버 기준 상태 갱신</p></div>
+    <div class="step"><div class="n">4</div><h3>S2C</h3><p>다른 클라이언트로 상태 전달</p></div>
+    <div class="step"><div class="n">5</div><h3>반영</h3><p>렌더링 위치와 충돌 상태 갱신</p></div>
+  </div>
+  <div class="code" style="margin-top:36px;">C2S_CHARACTER_MOVE
+S2C_CHARACTER_STATE
+AABB Collision
+Client / Server Loop</div>
+</section>
+
+<section class="page" data-document-role="page" data-label="NGP Collision">
+  <div class="page-no">18</div>
+  <div class="layout wide-right">
+    <img class="hero-img" src="assets/deck_image21.png" alt="NGP 플레이 화면">
+    <div class="stack">
+      <div>
+        <div class="eyebrow">Project 03 · Gameplay</div>
+        <h2>충돌과 게임 진행</h2>
+      </div>
+      <div class="panel"><h3>AABB Collision</h3><p>플레이어와 장애물의 축 정렬 경계 박스를 기준으로 충돌 여부를 판정했습니다.</p></div>
+      <div class="panel"><h3>State Sync</h3><p>캐릭터 위치, 이동 방향, 충돌 결과가 네트워크 패킷과 렌더링 상태에 반영되도록 구성했습니다.</p></div>
+      <div class="panel"><h3>기초 체득</h3><p>엔진 없이 루프, 입력, 네트워크, 렌더링 순서를 직접 다루며 게임 구조의 하위 계층을 경험했습니다.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="page light" data-document-role="page" data-label="NGP Lessons">
+  <div class="page-no">19</div>
+  <div class="eyebrow">Project 03 · Learn From Key Roles</div>
+  <h2>역할을 수행하며 배운 점</h2>
+  <div class="big-list">
+    <div class="panel"><b>문제점</b><p>렌더링, 입력, 네트워크 처리가 한 루프 안에 섞이면 버그 원인을 빠르게 좁히기 어려웠습니다.</p></div>
+    <div class="panel"><b>개선점</b><p>패킷 구조와 상태 갱신 순서를 분리해 어느 단계에서 값이 달라지는지 확인할 수 있게 정리했습니다.</p></div>
+    <div class="panel"><b>배운점</b><p>Unity나 Unreal의 편리한 기능이 내부적으로 어떤 흐름을 감싸고 있는지 이해하는 계기가 되었습니다.</p></div>
+  </div>
+</section>
+
+<section class="page" data-document-role="page" data-label="Project 04 Overview">
+  <div class="page-no">20</div>
+  <div class="layout wide-left">
+    <div class="stack">
+      <div>
+        <div class="eyebrow">Project 04</div>
+        <h2>Hamtori Escape</h2>
+        <p style="margin-top:24px;">Pico2D 기반 2D 게임 프로젝트입니다. Game Loop, State Machine, Collision, Stage 진행 등 클라이언트 기본기를 익히는 데 집중했습니다.</p>
+      </div>
+      <div class="meta">
+        <div class="metric"><b>언어</b><span>Python</span></div>
+        <div class="metric"><b>라이브러리</b><span>Pico2D</span></div>
+        <div class="metric"><b>장르</b><span>2D Escape</span></div>
+        <div class="metric"><b>역할</b><span>Loop · State · Collision</span></div>
+      </div>
+    </div>
+    <img class="hero-img" src="assets/deck_image17.png" alt="Hamtori Escape 화면">
+  </div>
+</section>
+
+<section class="page light" data-document-role="page" data-label="Hamtori Loop">
+  <div class="page-no">21</div>
+  <div class="eyebrow">Project 04 · Game Loop</div>
+  <h2>2D 게임의 기본 흐름</h2>
+  <div class="flow">
+    <div class="step"><div class="n">1</div><h3>Input</h3><p>키 입력과 상태 전환 조건 수집</p></div>
+    <div class="step"><div class="n">2</div><h3>Update</h3><p>캐릭터, 오브젝트, 맵 상태 갱신</p></div>
+    <div class="step"><div class="n">3</div><h3>Collision</h3><p>장애물과 목표 지점 충돌 판정</p></div>
+    <div class="step"><div class="n">4</div><h3>State</h3><p>Idle, Move, Clear, Fail 상태 관리</p></div>
+    <div class="step"><div class="n">5</div><h3>Draw</h3><p>카메라와 화면 출력 갱신</p></div>
+  </div>
+  <div class="image-grid three" style="margin-top:32px;">
+    <img class="thumb" src="assets/deck_image16.png" alt="Hamtori 스테이지 1">
+    <img class="thumb" src="assets/deck_image17.png" alt="Hamtori 스테이지 2">
+    <img class="thumb" src="assets/deck_image18.png" alt="Hamtori 스테이지 3">
+  </div>
+</section>
+
+<section class="page" data-document-role="page" data-label="Hamtori Collision">
+  <div class="page-no">22</div>
+  <div class="layout wide-right">
+    <img class="hero-img" src="assets/deck_image19.png" alt="Hamtori 엔딩 화면">
+    <div class="stack">
+      <div>
+        <div class="eyebrow">Project 04 · Collision</div>
+        <h2>충돌과 스테이지 구성</h2>
+      </div>
+      <div class="panel"><h3>장애물 판정</h3><p>맵 타일과 움직이는 오브젝트의 충돌 범위를 분리해 플레이어 이동을 제한했습니다.</p></div>
+      <div class="panel"><h3>상태 전환</h3><p>충돌 결과에 따라 Clear, Fail, Retry 흐름으로 전환되도록 게임 상태를 관리했습니다.</p></div>
+      <div class="panel"><h3>기초 확장</h3><p>이후 Unity와 Unreal 프로젝트에서 충돌, 상태, 입력 구조를 이해하는 기반이 되었습니다.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="page light" data-document-role="page" data-label="Hamtori Lessons">
+  <div class="page-no">23</div>
+  <div class="eyebrow">Project 04 · Learn From Key Roles</div>
+  <h2>역할을 수행하며 배운 점</h2>
+  <div class="big-list">
+    <div class="panel"><b>문제점</b><p>처음에는 기능을 화면에 보이게 만드는 데 집중해 코드 구조와 상태 분리가 부족했습니다.</p></div>
+    <div class="panel"><b>개선점</b><p>Game Loop 안에서 입력, 갱신, 충돌, 렌더링을 단계별로 나누어 생각하는 습관을 만들었습니다.</p></div>
+    <div class="panel"><b>배운점</b><p>작은 2D 프로젝트라도 완성까지 가져가면 이후 큰 엔진 프로젝트에서 문제를 더 빠르게 분해할 수 있습니다.</p></div>
+  </div>
+</section>
+
+<section class="page" data-document-role="page" data-label="Communication">
+  <div class="page-no">24</div>
+  <div class="layout wide-left">
+    <div class="stack">
+      <div>
+        <div class="eyebrow">Communication Efficiency</div>
+        <h2>소통 효율을 어떻게 높였나요?</h2>
+      </div>
+      <div class="panel"><h3>역할 경계 명확화</h3><p>프로젝트별로 내가 맡은 코드 경계를 정리하고, 면접에서 설명 가능한 단위로 문서화했습니다.</p></div>
+      <div class="panel"><h3>Git 기반 협업</h3><p>Git Flow를 사용하고, 머지 과정에서 사라진 커밋은 해시 추적과 cherry-pick으로 복구했습니다.</p></div>
+      <div class="panel"><h3>보고서 기반 회고</h3><p>주차별 보고서를 단순 일정 기록이 아니라 문제, 원인, 수정, 검증의 증거로 재정리했습니다.</p></div>
+    </div>
+    <img class="hero-img contain" src="assets/flickdom_Project_MD.png" alt="프로젝트 문서화 화면">
+  </div>
+</section>
+
+<section class="page light" data-document-role="page" data-label="AI Usage">
+  <div class="page-no">25</div>
+  <div class="eyebrow">AI Usage</div>
+  <h2>AI를 어떻게 활용했나요?</h2>
+  <div class="two-col" style="margin-top:40px;">
+    <div class="panel">
+      <h3>문서 정리</h3>
+      <p>보고서, 포트폴리오, README 내용을 프로젝트별 역할과 문제 해결 사례 중심으로 재구성했습니다.</p>
+    </div>
+    <div class="panel">
+      <h3>코드 검토 보조</h3>
+      <p>AI가 제안한 내용을 그대로 반영하지 않고, 엔진 실행 결과와 코드 흐름을 기준으로 다시 검증했습니다.</p>
+    </div>
+    <div class="panel">
+      <h3>원인 가설화</h3>
+      <p>충돌, 동기화, 상태 전환 문제에서 가능한 원인을 나열하고 하나씩 확인하는 방식으로 사용했습니다.</p>
+    </div>
+    <div class="panel">
+      <h3>최종 책임</h3>
+      <p>구현의 최종 판단은 코드, 로그, 실행 화면, 팀 테스트 결과로 확인했습니다.</p>
+    </div>
+  </div>
+  <div class="image-grid three" style="margin-top:30px;">
+    <img class="thumb" src="assets/flickdom_Unity_MCP.png" alt="Unity MCP 화면">
+    <img class="thumb" src="assets/flickdom_Blender_MCP.png" alt="Blender MCP 화면">
+    <img class="thumb" src="assets/flickdom_Substance_MCP.png" alt="Substance MCP 화면">
+  </div>
+</section>
+
+<section class="page" data-document-role="page" data-label="Evidence Links">
+  <div class="page-no">26</div>
+  <div class="eyebrow">Evidence</div>
+  <h2>검증 가능한 자료</h2>
+  <div class="big-list">
+    <div class="panel"><b>GitHub</b><p>github.com/tlsdn0403 · FlickDom, Infection, 2DGP, NGP 프로젝트 코드 링크를 정리합니다.</p></div>
+    <div class="panel"><b>Demo</b><p>FlickDom WebGL과 시연 영상 링크를 넣어 실제 실행 흐름을 확인할 수 있게 합니다.</p></div>
+    <div class="panel"><b>Code Capture</b><p>Infection의 ApplyPointDamage, BoneName, DismemberLimb, StartCrawling, Truck Interaction 코드는 별도 캡처를 추가합니다.</p></div>
+    <div class="panel"><b>Report</b><p>졸업작품 주차별 보고서는 “과정 증거”로 활용하고, 포트폴리오 본문에는 문제 해결 흐름만 압축합니다.</p></div>
+  </div>
+  <div class="chips">
+    <span class="chip">FlickDom GitHub</span>
+    <span class="chip">FlickDom WebGL</span>
+    <span class="chip">Infection GitHub</span>
+    <span class="chip">NGP GitHub</span>
+    <span class="chip">Hamtori GitHub</span>
+  </div>
+</section>
+
+<section class="page" data-document-role="page" data-label="Closing">
+  <div class="page-no">27</div>
+  <div class="layout wide-left">
+    <div class="stack lg">
+      <div>
+        <div class="eyebrow">Thank You</div>
+        <h1>읽어주셔서<br>감사합니다</h1>
+      </div>
+      <p>박신우 · 게임 클라이언트 프로그래머</p>
+      <div class="chips">
+        <span class="chip">tlsdn0403@gmail.com</span>
+        <span class="chip">github.com/tlsdn0403</span>
+        <span class="chip">010-7390-1751</span>
+      </div>
+    </div>
+    <img class="hero-img" src="assets/flickdom_intro_2-3.png" alt="FlickDom 승리 화면">
+  </div>
+  <div class="footer-note">Next: Canva에서 각 프로젝트 코드 캡처와 정확한 링크를 최종 교체</div>
+</section>
+
+</body>
+</html>

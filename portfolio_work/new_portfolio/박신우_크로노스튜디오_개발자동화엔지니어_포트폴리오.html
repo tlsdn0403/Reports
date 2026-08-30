@@ -6,15 +6,15 @@
   <title>박신우 크로노스튜디오 개발 자동화 엔지니어 포트폴리오</title>
   <style>
     :root {
-      --paper: #f5f7f2;
-      --ink: #111a17;
-      --muted: #5d665f;
-      --line: #d6ddd3;
-      --panel: #fbfcf8;
-      --panel-soft: #edf3ea;
-      --accent: #d7c63d;
-      --accent-2: #2f7555;
-      --accent-3: #18382c;
+      --paper: #eef2e8;
+      --ink: #111a16;
+      --muted: #52605a;
+      --line: #cbd8cb;
+      --panel: #fbfcf5;
+      --panel-soft: #e6eee3;
+      --accent: #e2cf3d;
+      --accent-2: #2e7654;
+      --accent-3: #15362a;
       --dark: #07100d;
       --dark-soft: #14231d;
       --white: #ffffff;
@@ -25,7 +25,7 @@
     }
 
     html {
-      background: #dfe3eb;
+      background: #18221d;
     }
 
     body {
@@ -34,7 +34,7 @@
       font-family: "Pretendard", "Segoe UI", "Apple SD Gothic Neo", "Malgun Gothic", Arial, sans-serif;
       letter-spacing: 0;
       word-break: keep-all;
-      background: #dfe3eb;
+      background: #18221d;
     }
 
     .toolbar {
@@ -86,7 +86,8 @@
       margin: 0 0 32px;
       overflow: hidden;
       border-radius: 8px;
-      background: var(--paper);
+      background:
+        linear-gradient(180deg, #f5f7ef 0%, var(--paper) 100%);
       box-shadow: 0 24px 70px rgba(17, 19, 26, 0.22);
       break-after: page;
       page-break-after: always;
@@ -100,7 +101,7 @@
     .page.dark {
       color: var(--white);
       background:
-        linear-gradient(135deg, #07100d 0%, #121f1a 54%, #273d30 100%);
+        linear-gradient(135deg, #07100d 0%, #10231b 56%, #1d3a2d 100%);
     }
 
     .page.cover-page {
@@ -276,6 +277,7 @@
 
     .hero-shot,
     .image-frame {
+      position: relative;
       overflow: hidden;
       border: 1px solid rgba(23, 25, 35, 0.12);
       border-radius: 8px;
@@ -546,7 +548,7 @@
     }
 
     .dark .role-card .name {
-      color: #ff7a70;
+      color: #e2cf3d;
     }
 
     .detail-table {
@@ -715,6 +717,20 @@
       background: #07100d;
     }
 
+    .shot-badge {
+      position: absolute;
+      left: 10px;
+      top: 10px;
+      z-index: 2;
+      padding: 5px 8px;
+      border-radius: 6px;
+      background: rgba(7, 16, 13, 0.78);
+      color: #f6ee9e;
+      font-size: 11px;
+      font-weight: 950;
+      letter-spacing: 0.02em;
+    }
+
     .ai-shot figcaption {
       padding: 10px 12px 12px;
       color: #dfe7e1;
@@ -839,6 +855,15 @@
       line-height: 1.16;
     }
 
+    .cover-card .sub-label {
+      margin-top: 38px;
+      color: #e2cf3d;
+      font-size: 16px;
+      font-weight: 950;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
     .cover-card .role-meta {
       margin-top: 42px;
       color: #bfc6c4;
@@ -851,9 +876,9 @@
     .duty-list {
       display: grid;
       gap: 10px;
-      margin-top: 36px;
+      margin-top: 14px;
       color: #d6ddd9;
-      font-size: 22px;
+      font-size: 20px;
       font-weight: 820;
       line-height: 1.32;
     }
@@ -1291,7 +1316,7 @@
       }
     }
 
-    @media (max-width: 900px) {
+    @media screen and (max-width: 900px) {
       .deck {
         width: min(100% - 20px, 1500px);
       }
@@ -1363,12 +1388,14 @@
           <h1>박신우<br>개발 자동화<br>엔지니어</h1>
         </div>
         <div class="cover-card">
-          <div class="label">지원 업무</div>
-          <div class="role-title">AI 기반<br>개발 자동화</div>
+          <div class="label">지원 직무</div>
+          <div class="role-title">개발 자동화<br>엔지니어</div>
+          <div class="sub-label">지원 업무</div>
           <div class="duty-list">
-            <span>빌드·검증 절차 정리</span>
-            <span>개발 워크플로우 개선</span>
-            <span>게임 클라이언트 작업 지원</span>
+            <span>빌드 조건 정리</span>
+            <span>검증 체크리스트 작성</span>
+            <span>개발 문서/로그 정리</span>
+            <span>Unity/UE 작업 보조 도구화</span>
           </div>
         </div>
         <div class="cover-foot">PARK SHINWOO · DEVELOPMENT AUTOMATION PORTFOLIO</div>
@@ -1379,25 +1406,25 @@
       <div class="inner">
         <div class="page-head">
           <div>
-            <p class="eyebrow">Overview</p>
-            <h2>프로젝트별 작업 범위와 근거</h2>
+            <p class="eyebrow">Portfolio Overview</p>
+            <h2>프로젝트별 구현 범위와 검증 기준</h2>
           </div>
           <span class="page-no">02 / 10</span>
         </div>
         <div class="scope-grid">
           <div class="section-card">
-            <h3>작업 기준</h3>
-            <p>각 프로젝트에서 확인 가능한 코드, 실행 결과, 문서 자료를 기준으로 정리했습니다. 기능 구현 사례와 빌드·검증 기록을 분리해 작업 범위가 드러나도록 구성했습니다.</p>
+            <h3>구성 기준</h3>
+            <p>확인 가능한 코드, 실행 결과, 문서 자료만 기준으로 정리했습니다. 각 사례는 문제, 본인 작업 범위, 구현/정리 방식, 확인 결과가 구분되도록 구성했습니다.</p>
             <div class="skills-grid">
-              <div class="skill-box"><strong>Build / Run</strong>WebGL 빌드 설정, 실행 조건, 체크리스트</div>
-              <div class="skill-box"><strong>Verification</strong>실행 화면, 영상, 개발 로그 기준 확인</div>
-              <div class="skill-box"><strong>Client Code</strong>Unity, UE5 C++, 게임 상태 처리</div>
-              <div class="skill-box"><strong>AI Tool Use</strong>문서 초안, 점검 목록, 에셋 제작 보조</div>
+              <div class="skill-box"><strong>Build / Run</strong>빌드 조건, 실행 절차, 배포 확인</div>
+              <div class="skill-box"><strong>Verification</strong>플레이 영상, 로그, 체크리스트 기준 확인</div>
+              <div class="skill-box"><strong>Client Code</strong>Unity WebGL, UE C++, 상태 처리</div>
+              <div class="skill-box"><strong>AI Workflow</strong>문서 정리, 반복 점검, 리소스 제작 보조</div>
             </div>
           </div>
           <div>
             <div class="scope-list">
-              <div class="scope-item"><strong>FlickDom</strong>Unity WebGL 1대1 보드게임. WebGL 빌드 조건, 실행 검증 절차, Host 권위 Snapshot 적용 흐름을 문서와 코드 기준으로 정리했습니다.</div>
+              <div class="scope-item"><strong>FlickDom</strong>Unity WebGL 1대1 보드게임. WebGL 빌드 조건, 실행 검증, Host 권위 Snapshot 흐름을 정리했습니다.</div>
               <div class="scope-item"><strong>감염:죽음의 도시</strong>Unreal Engine C++ 협동 TPS. 좀비 피격 부위 처리와 트럭 탑승 이동 기준 디버깅을 클라이언트 구현 사례로 정리했습니다.</div>
               <div class="scope-item"><strong>Other</strong>Pico2D FSM/Behavior Tree와 OpenGL TCP/IP 프로젝트로 상태 전환, 충돌 판정, 위치 동기화 기본기를 정리했습니다.</div>
               <div class="scope-item"><strong>Contact</strong>010-7390-1751 · tlsdn0403@gmail.com · github.com/tlsdn0403</div>
@@ -1412,7 +1439,7 @@
         <div class="page-head">
           <div>
             <p class="eyebrow">Automation Case</p>
-            <h2>FlickDom 빌드와 실행 조건 정리</h2>
+            <h2>FlickDom - 빌드와 실행 조건 정리</h2>
           </div>
           <span class="page-no">03 / 10</span>
         </div>
@@ -1423,7 +1450,7 @@
               <p>FlickDom은 Unity WebGL, NGO, Relay, 정적 호스팅이 연결된 프로젝트입니다. 빌드 옵션과 실행 조건을 따로 정리하지 않으면 같은 결과를 다시 확인하기 어렵습니다.</p>
             </div>
             <div class="decision-card">
-              <h3>정리한 근거</h3>
+              <h3>본인 작업 범위</h3>
               <ul>
                 <li>`WEBGL_BUILD.md`: WebGL Release 메뉴, 빌드 전환 옵션, 로컬 실행 조건</li>
                 <li>NGO / Relay 기반 2인 멀티플레이 실행 조건 정리</li>
@@ -1458,9 +1485,12 @@
         <div class="case-grid reverse">
           <div>
             <div class="decision-card">
-              <h3>문제와 선택</h3>
+              <h3>문제</h3>
               <p>P2가 디스크를 튕긴 직후 Client 화면에서는 즉시 움직임이 보여야 하지만, 최종 결과는 Host 물리가 결정해야 했습니다. Client가 Host Transform만 기다리면 입력 반응이 늦고, Client 물리를 그대로 믿으면 Host와 결과가 달라집니다.</p>
-              <p style="margin-top:10px;">그래서 Client는 입력 직후 로컬 예측을 시작하고, Host에는 FlickRequest를 보냅니다. Host는 현재 턴, 소유자, 말 ID, impulse 범위를 검증한 뒤 물리를 실행합니다. 움직이는 중에는 Transform Snapshot을 적용하고, 정착 이후 PhysicsSettled Snapshot을 받아 예측을 종료합니다.</p>
+            </div>
+            <div class="decision-card">
+              <h3>구현/정리 방식</h3>
+              <p>Client는 입력 직후 로컬 예측을 시작하고, Host에는 FlickRequest를 보냅니다. Host는 현재 턴, 소유자, 말 ID, impulse 범위를 검증한 뒤 물리를 실행합니다. 움직이는 중에는 Transform Snapshot을 적용하고, 정착 이후 PhysicsSettled Snapshot을 받아 예측을 종료합니다.</p>
             </div>
             <div class="flow-row">
               <div class="flow-step"><strong>Client Input</strong>P2가 방향과 힘을 계산하고 즉시 예측 시작</div>
@@ -1521,7 +1551,7 @@ CompleteLocalFlickPrediction();</pre>
               <p>보드 점령, 카드 완료, 점수 증가를 Client가 각각 계산하면 Host와 다른 결과가 나올 수 있습니다. 특히 카드 Stage가 넘어간 직후 이전 Snapshot이 늦게 들어오면 Client 화면이 이전 카드 상태로 되돌아갈 수 있습니다.</p>
             </div>
             <div class="decision-card">
-              <h3>해결 방법</h3>
+              <h3>구현/정리 방식</h3>
               <p>Client는 배치 의도만 PlacementRequest로 보내고, Host가 TokenMapManager.TryClaimCell로 점령 가능 여부와 재배치 source를 확정합니다. 이후 BoardState, ScoreState, CardState Snapshot을 전송하고 Client는 stale Snapshot을 거부한 뒤 화면만 갱신합니다.</p>
             </div>
             <div class="flow-row">
@@ -1577,7 +1607,7 @@ for (int i = 0; i &lt; claimedCards.Length; i++)
         <div class="case-grid">
           <div>
             <div class="decision-card">
-              <h3>문제와 기준</h3>
+              <h3>문제</h3>
               <p>좀비 피격을 단순 HP 감소로 처리하면 머리, 팔, 다리 같은 부위 파괴와 상태 전환을 만들기 어렵습니다. 그래서 FHitResult의 BoneName을 기준으로 피격 부위를 식별하고, 부위별 내구도는 TMap&lt;FName, float&gt;로 관리하는 구조를 사용했습니다.</p>
             </div>
             <div class="flow-row">
@@ -1587,7 +1617,7 @@ for (int i = 0; i &lt; claimedCards.Length; i++)
               <div class="flow-step"><strong>State</strong>DismemberLimb / StartCrawling</div>
             </div>
             <div class="decision-card">
-              <h3>구현 근거</h3>
+              <h3>구현/정리 방식</h3>
               <p>로컬 코드 기준으로 `FPSProjectile.cpp`의 `ApplyPointDamage`, `HealthComponent.cpp`의 `PointDamageTaken`, `BaseZombie.cpp`의 `OnZombieDamaged`, `ProcessBoneDamage`, `DismemberLimb`, `StartCrawling` 흐름을 확인할 수 있습니다. 네트워크 수신은 `HandleZombieDismember`에서 BoneName을 복원해 같은 시각 효과 경로로 연결합니다.</p>
             </div>
           </div>
@@ -1611,11 +1641,11 @@ for (int i = 0; i &lt; claimedCards.Length; i++)
         <div class="case-grid reverse">
           <div>
             <div class="decision-card">
-              <h3>증상</h3>
+              <h3>문제</h3>
               <p>트럭 짐칸에 탑승한 플레이어가 튀거나 뒤로 밀리는 문제가 있었습니다. 처음에는 Mesh 충돌처럼 보였지만, 실제로는 충돌 구조와 이동 기준, 멀티플레이 위치 보정이 함께 얽힌 문제로 보았습니다.</p>
             </div>
             <div class="decision-card">
-              <h3>해결 방향</h3>
+              <h3>구현/정리 방식</h3>
               <p>매 프레임 위치를 보정하는 방식은 물리와 네트워크 보정이 다시 충돌할 수 있습니다. 트럭 위에 있을 때는 SetBase(NewBase)로 트럭 바닥을 이동 기준으로 잡고, 점프나 하차 시 SetBase(nullptr)와 상태 초기화를 수행하는 구조로 정리했습니다.</p>
             </div>
             <div class="flow-row">
@@ -1696,20 +1726,20 @@ for (int i = 0; i &lt; claimedCards.Length; i++)
           <div>
             <div class="media-quad">
               <figure class="ai-shot">
-                <div class="image-frame"><img src="assets/flickdom_Project_MD.png" alt="FlickDom 문서 기반 작업 화면"></div>
-                <figcaption><strong>Docs / Rule Check</strong>md 문서와 개발 로그로 게임 규칙, 작업 규칙, 빌드 조건을 확인한 화면</figcaption>
+                <div class="image-frame"><span class="shot-badge">문서 검토</span><img src="assets/flickdom_Project_MD.png" alt="FlickDom 문서 기반 작업 화면"></div>
+                <figcaption><strong>Docs / Rule Check</strong>md 문서와 개발 로그로 게임 규칙, 작업 규칙, 빌드 조건을 확인</figcaption>
               </figure>
               <figure class="ai-shot">
-                <div class="image-frame"><img src="assets/flickdom_Unity_MCP.png" alt="Unity MCP 연동 화면"></div>
-                <figcaption><strong>Unity MCP</strong>Codex와 Unity Editor를 연결해 씬과 오브젝트 상태를 확인한 화면</figcaption>
+                <div class="image-frame"><span class="shot-badge">에디터 확인</span><img src="assets/flickdom_Unity_MCP.png" alt="Unity MCP 연동 화면"></div>
+                <figcaption><strong>Unity MCP</strong>Codex와 Unity Editor를 연결해 씬과 오브젝트 상태를 확인</figcaption>
               </figure>
               <figure class="ai-shot">
-                <div class="image-frame"><img src="assets/flickdom_Blender_MCP.png" alt="Blender MCP 리소스 제작 화면"></div>
-                <figcaption><strong>Blender MCP</strong>보드, 디스크, 소품 리소스 제작과 배치 방향을 점검한 화면</figcaption>
+                <div class="image-frame"><span class="shot-badge">리소스 제작</span><img src="assets/flickdom_Blender_MCP.png" alt="Blender MCP 리소스 제작 화면"></div>
+                <figcaption><strong>Blender MCP</strong>보드, 디스크, 소품 리소스 제작과 배치 방향 점검</figcaption>
               </figure>
               <figure class="ai-shot">
-                <div class="image-frame"><img src="assets/flickdom_Varco_EffectSound.png" alt="VARCO AI 효과음 제작 화면"></div>
-                <figcaption><strong>VARCO AI</strong>버튼, 점수, 실패, 승리 효과음과 BGM 제작을 보조한 화면</figcaption>
+                <div class="image-frame"><span class="shot-badge">사운드 보조</span><img src="assets/flickdom_Varco_EffectSound.png" alt="VARCO AI 효과음 제작 화면"></div>
+                <figcaption><strong>VARCO AI</strong>버튼, 점수, 실패, 승리 효과음과 BGM 제작 보조</figcaption>
               </figure>
             </div>
           </div>
@@ -1729,33 +1759,33 @@ for (int i = 0; i &lt; claimedCards.Length; i++)
         <p class="resource-lead">프로젝트 코드, 플레이 링크, 영상 자료를 아래 링크에서 확인할 수 있습니다.</p>
         <div class="resource-grid">
           <a class="resource-card" href="https://fantastic-pothos-5ab193.netlify.app/" target="_blank" rel="noreferrer">
-            <strong>FlickDom</strong>
-            <span class="resource-type">WebGL Play</span>
+            <strong>FlickDom WebGL Play</strong>
+            <span class="resource-type">실행 링크</span>
             <span class="resource-url">https://fantastic-pothos-5ab193.netlify.app/</span>
           </a>
           <a class="resource-card" href="https://www.youtube.com/watch?v=ddM9ggItGwQ" target="_blank" rel="noreferrer">
-            <strong>FlickDom</strong>
-            <span class="resource-type">Play Video</span>
+            <strong>FlickDom Play Video</strong>
+            <span class="resource-type">플레이 영상</span>
             <span class="resource-url">https://www.youtube.com/watch?v=ddM9ggItGwQ</span>
           </a>
           <a class="resource-card" href="https://github.com/AACHANJINAA/FlickDom" target="_blank" rel="noreferrer">
-            <strong>FlickDom</strong>
-            <span class="resource-type">GitHub</span>
+            <strong>FlickDom GitHub</strong>
+            <span class="resource-type">소스 코드</span>
             <span class="resource-url">https://github.com/AACHANJINAA/FlickDom</span>
           </a>
           <a class="resource-card" href="https://github.com/tlsdn0403/SYJ" target="_blank" rel="noreferrer">
-            <strong>감염:죽음의 도시</strong>
-            <span class="resource-type">GitHub</span>
+            <strong>감염:죽음의 도시 GitHub</strong>
+            <span class="resource-type">Unreal Engine C++ 프로젝트</span>
             <span class="resource-url">https://github.com/tlsdn0403/SYJ</span>
           </a>
           <a class="resource-card" href="https://github.com/tlsdn0403/2DGP-Project" target="_blank" rel="noreferrer">
-            <strong>Hamtori Escape</strong>
-            <span class="resource-type">GitHub</span>
+            <strong>Hamtori Escape GitHub</strong>
+            <span class="resource-type">Pico2D 프로젝트</span>
             <span class="resource-url">https://github.com/tlsdn0403/2DGP-Project</span>
           </a>
           <a class="resource-card" href="https://github.com/tlsdn0403/NGP_Project" target="_blank" rel="noreferrer">
-            <strong>Network Game Programming</strong>
-            <span class="resource-type">GitHub</span>
+            <strong>Network Game Programming GitHub</strong>
+            <span class="resource-type">TCP/IP 프로젝트</span>
             <span class="resource-url">https://github.com/tlsdn0403/NGP_Project</span>
           </a>
         </div>

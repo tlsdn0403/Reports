@@ -1,0 +1,565 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Unity Client Developer Canva Template</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 32px;
+      background: #101318;
+      color: #eef3f7;
+      font-family: "Malgun Gothic", "Apple SD Gothic Neo", "Segoe UI", Arial, sans-serif;
+    }
+
+    .page {
+      position: relative;
+      width: 1366px;
+      height: 768px;
+      margin: 0 auto 32px;
+      overflow: hidden;
+      background: #141922;
+      color: #eef3f7;
+    }
+
+    .grid {
+      position: absolute;
+      inset: 0;
+      opacity: 0.13;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.14) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.14) 1px, transparent 1px);
+      background-size: 72px 72px;
+    }
+
+    .circle-blue {
+      position: absolute;
+      width: 380px;
+      height: 380px;
+      border-radius: 50%;
+      right: 52px;
+      top: 28px;
+      background: rgba(55, 132, 255, 0.18);
+    }
+
+    .circle-orange {
+      position: absolute;
+      width: 260px;
+      height: 260px;
+      border-radius: 50%;
+      right: -6px;
+      bottom: 10px;
+      background: rgba(255, 174, 66, 0.18);
+    }
+
+    .brand {
+      position: absolute;
+      left: 52px;
+      top: 52px;
+      width: 148px;
+      height: 46px;
+      border-radius: 8px;
+      background: #25c2a0;
+      color: #071411;
+      font-size: 18px;
+      font-weight: 700;
+      line-height: 46px;
+      text-align: center;
+    }
+
+    .eyebrow {
+      position: absolute;
+      left: 230px;
+      top: 60px;
+      color: #9ea9b8;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 0;
+    }
+
+    .page-number {
+      position: absolute;
+      right: 120px;
+      top: 46px;
+      color: #9ea9b8;
+      font-size: 58px;
+      font-weight: 700;
+    }
+
+    .headline {
+      position: absolute;
+      left: 86px;
+      top: 182px;
+      width: 640px;
+      color: #f4f8fb;
+      font-size: 72px;
+      font-weight: 800;
+      line-height: 1.06;
+      letter-spacing: 0;
+    }
+
+    .headline.small {
+      top: 186px;
+      font-size: 58px;
+      line-height: 1.1;
+    }
+
+    .name-line {
+      position: absolute;
+      left: 96px;
+      top: 380px;
+      width: 560px;
+      color: #25c2a0;
+      font-size: 31px;
+      font-weight: 800;
+    }
+
+    .body-copy {
+      position: absolute;
+      left: 96px;
+      top: 430px;
+      width: 590px;
+      color: #b8c2cf;
+      font-size: 22px;
+      line-height: 1.45;
+      font-weight: 400;
+    }
+
+    .footer {
+      position: absolute;
+      left: 96px;
+      bottom: 72px;
+      color: #9ea9b8;
+      font-size: 20px;
+      font-weight: 500;
+    }
+
+    .tag-row {
+      position: absolute;
+      left: 96px;
+      top: 532px;
+      display: flex;
+      gap: 12px;
+    }
+
+    .tag {
+      min-width: 104px;
+      height: 40px;
+      padding: 0 18px;
+      border-radius: 8px;
+      background: #223144;
+      color: #eef3f7;
+      font-size: 20px;
+      font-weight: 700;
+      line-height: 40px;
+      text-align: center;
+    }
+
+    .tag.primary {
+      background: #25c2a0;
+      color: #071411;
+    }
+
+    .code-window {
+      position: absolute;
+      left: 786px;
+      top: 188px;
+      width: 440px;
+      height: 330px;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      background: #1d2532;
+      color: #dce7ee;
+    }
+
+    .dot {
+      position: absolute;
+      top: 21px;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+    }
+
+    .dot.one {
+      left: 21px;
+      background: #ffb84d;
+    }
+
+    .dot.two {
+      left: 45px;
+      background: #25c2a0;
+    }
+
+    .dot.three {
+      left: 69px;
+      background: #4aa3ff;
+    }
+
+    .code-line {
+      position: absolute;
+      left: 28px;
+      width: 382px;
+      color: #dce7ee;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 20px;
+      line-height: 1.3;
+    }
+
+    .copy-block {
+      position: absolute;
+      left: 90px;
+      top: 356px;
+      width: 590px;
+      color: #b8c2cf;
+      font-size: 23px;
+      line-height: 1.5;
+    }
+
+    .point-card {
+      position: absolute;
+      left: 762px;
+      width: 470px;
+      height: 92px;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      background: #1d2532;
+    }
+
+    .point-number {
+      position: absolute;
+      left: 22px;
+      top: 24px;
+      width: 44px;
+      height: 44px;
+      border-radius: 8px;
+      background: #4aa3ff;
+      color: #08131f;
+      font-size: 18px;
+      font-weight: 800;
+      line-height: 44px;
+      text-align: center;
+    }
+
+    .point-text {
+      position: absolute;
+      left: 86px;
+      top: 20px;
+      width: 346px;
+      color: #eef3f7;
+      font-size: 21px;
+      line-height: 1.35;
+      font-weight: 600;
+    }
+
+    .skill-title {
+      position: absolute;
+      left: 96px;
+      width: 140px;
+      color: #eef3f7;
+      font-size: 29px;
+      font-weight: 800;
+    }
+
+    .skill-desc {
+      position: absolute;
+      left: 248px;
+      width: 430px;
+      color: #b8c2cf;
+      font-size: 19px;
+      line-height: 1.35;
+    }
+
+    .bar-track {
+      position: absolute;
+      left: 760px;
+      width: 420px;
+      height: 18px;
+      border-radius: 8px;
+      background: #222b38;
+    }
+
+    .bar-fill {
+      height: 18px;
+      border-radius: 8px;
+      background: #25c2a0;
+    }
+
+    .bar-label {
+      position: absolute;
+      left: 1190px;
+      width: 54px;
+      color: #9ea9b8;
+      font-size: 18px;
+      font-weight: 700;
+      text-align: right;
+    }
+
+    .meta-card {
+      position: absolute;
+      width: 236px;
+      height: 94px;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      background: #1d2532;
+    }
+
+    .meta-label {
+      position: absolute;
+      left: 22px;
+      top: 18px;
+      color: #25c2a0;
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    .meta-value {
+      position: absolute;
+      left: 22px;
+      top: 46px;
+      width: 190px;
+      color: #eef3f7;
+      font-size: 19px;
+      line-height: 1.25;
+      font-weight: 600;
+    }
+
+    .link-box {
+      position: absolute;
+      left: 714px;
+      top: 570px;
+      width: 508px;
+      height: 70px;
+      border-radius: 8px;
+      background: #25c2a0;
+      color: #071411;
+      font-size: 25px;
+      font-weight: 800;
+      line-height: 70px;
+      text-align: center;
+    }
+
+    .quote {
+      position: absolute;
+      left: 90px;
+      top: 360px;
+      width: 510px;
+      color: #b8c2cf;
+      font-size: 22px;
+      line-height: 1.45;
+    }
+
+    .flow-card {
+      position: absolute;
+      top: 392px;
+      width: 174px;
+      height: 86px;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      background: #1d2532;
+    }
+
+    .flow-number {
+      position: absolute;
+      left: 24px;
+      top: 14px;
+      color: #25c2a0;
+      font-size: 24px;
+      font-weight: 800;
+    }
+
+    .flow-text {
+      position: absolute;
+      left: 24px;
+      top: 46px;
+      width: 124px;
+      color: #eef3f7;
+      font-size: 17px;
+      line-height: 1.25;
+      font-weight: 600;
+    }
+
+    .arrow {
+      position: absolute;
+      top: 429px;
+      width: 34px;
+      height: 3px;
+      background: #25c2a0;
+    }
+
+    .arrow::after {
+      content: "";
+      position: absolute;
+      right: -1px;
+      top: -7px;
+      width: 0;
+      height: 0;
+      border-left: 11px solid #25c2a0;
+      border-top: 8px solid transparent;
+      border-bottom: 8px solid transparent;
+    }
+
+    .section-title {
+      position: absolute;
+      left: 96px;
+      top: 568px;
+      color: #eef3f7;
+      font-size: 34px;
+      font-weight: 800;
+    }
+
+    .pattern-row {
+      position: absolute;
+      left: 312px;
+      top: 556px;
+      width: 900px;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+  </style>
+</head>
+<body>
+  <section class="page" data-document-role="page" data-label="Cover">
+    <div class="grid"></div>
+    <div class="circle-blue"></div>
+    <div class="circle-orange"></div>
+    <div class="brand">Bae Minjae</div>
+    <div class="eyebrow">PORTFOLIO TEMPLATE</div>
+    <div class="page-number">01</div>
+    <div class="headline">Unity Client<br>Developer</div>
+    <div class="name-line">[이름] 배민재</div>
+    <div class="body-copy">신입 Unity 클라이언트 개발자 | C# · Unity · UI/UX · GitHub 협업</div>
+    <div class="tag-row">
+      <div class="tag primary">성장형 개발자</div>
+      <div class="tag">사용자 경험</div>
+      <div class="tag primary">게임 클라이언트</div>
+      <div class="tag">팀 협업</div>
+    </div>
+    <div class="code-window">
+      <div class="dot one"></div>
+      <div class="dot two"></div>
+      <div class="dot three"></div>
+      <div class="code-line" style="top:70px;">public class ClientDeveloper</div>
+      <div class="code-line" style="top:104px;">{</div>
+      <div class="code-line" style="top:138px;">  SkillSet = C# + Unity;</div>
+      <div class="code-line" style="top:172px;">  Focus = Player + UIUX;</div>
+      <div class="code-line" style="top:206px;">  Workflow = GitHub + Notion;</div>
+      <div class="code-line" style="top:240px;">}</div>
+    </div>
+    <div class="footer">E-Mail | GitHub | Notion</div>
+  </section>
+
+  <section class="page" data-document-role="page" data-label="Introduce">
+    <div class="grid"></div>
+    <div class="circle-blue"></div>
+    <div class="circle-orange"></div>
+    <div class="brand">Bae Minjae</div>
+    <div class="eyebrow">INTRODUCE</div>
+    <div class="page-number">02</div>
+    <div class="headline small">함께 성장하고<br>즐거운 경험을 만드는 개발자</div>
+    <div class="copy-block">다양한 사람들과 함께 성장하고 경험하는 것을 좋아합니다. Unity와 C#을 기반으로 게임 클라이언트를 구현하며, 사용자에게 더 큰 재미를 제공하는 인터랙션과 UI/UX를 고민합니다.</div>
+    <div class="point-card" style="top:224px;">
+      <div class="point-number">01</div>
+      <div class="point-text">Kotlin 앱 개발 경험에서 게임 클라이언트 분야로 확장</div>
+    </div>
+    <div class="point-card" style="top:352px;">
+      <div class="point-number" style="background:#25c2a0;">02</div>
+      <div class="point-text">MetaVerse Unity 클라이언트 개발자 과정 기반 C# 학습</div>
+    </div>
+    <div class="point-card" style="top:480px;">
+      <div class="point-number" style="background:#ffb84d;">03</div>
+      <div class="point-text">기획, 플레이어 시스템, UI/UX, 사운드까지 연결해 구현</div>
+    </div>
+  </section>
+
+  <section class="page" data-document-role="page" data-label="Tech Skills">
+    <div class="grid"></div>
+    <div class="circle-blue"></div>
+    <div class="circle-orange"></div>
+    <div class="brand">Bae Minjae</div>
+    <div class="eyebrow">TECH SKILLS</div>
+    <div class="page-number">03</div>
+    <div class="headline small">현재 이런 것들을<br>할 수 있습니다</div>
+    <div class="code-window" style="left:760px;top:178px;width:420px;height:118px;">
+      <div class="dot one"></div>
+      <div class="dot two"></div>
+      <div class="dot three"></div>
+      <div class="code-line" style="top:60px;">[기술 스택] C# / Unity / GitHub</div>
+      <div class="code-line" style="top:88px;">Visual Studio / Figma / Notion</div>
+    </div>
+    <div class="skill-title" style="top:332px;">C#</div>
+    <div class="skill-desc" style="top:328px;">게임 기능 구현을 위한 기본 문법과 스크립트 작성</div>
+    <div class="bar-track" style="top:326px;"><div class="bar-fill" style="width:76%;"></div></div>
+    <div class="bar-label" style="top:318px;">76%</div>
+
+    <div class="skill-title" style="top:410px;">Unity</div>
+    <div class="skill-desc" style="top:406px;">엔진 흐름 이해, 클라이언트 로직과 UI/UX 구성</div>
+    <div class="bar-track" style="top:404px;"><div class="bar-fill" style="width:82%;background:#4aa3ff;"></div></div>
+    <div class="bar-label" style="top:396px;">82%</div>
+
+    <div class="skill-title" style="top:488px;">GitHub</div>
+    <div class="skill-desc" style="top:484px;">버전 관리, 소스코드 관리, 팀 프로젝트 협업</div>
+    <div class="bar-track" style="top:482px;"><div class="bar-fill" style="width:72%;"></div></div>
+    <div class="bar-label" style="top:474px;">72%</div>
+
+    <div class="skill-title" style="top:566px;">Figma / Notion</div>
+    <div class="skill-desc" style="top:562px;">기획 공유, 일정 관리, 작업 목록 관리</div>
+    <div class="bar-track" style="top:560px;"><div class="bar-fill" style="width:68%;background:#4aa3ff;"></div></div>
+    <div class="bar-label" style="top:552px;">68%</div>
+  </section>
+
+  <section class="page" data-document-role="page" data-label="Project Case">
+    <div class="grid"></div>
+    <div class="circle-blue"></div>
+    <div class="circle-orange"></div>
+    <div class="brand">Bae Minjae</div>
+    <div class="eyebrow">PROJECT CASE</div>
+    <div class="page-number">04</div>
+    <div class="headline" style="top:198px;font-size:48px;color:#25c2a0;">Project 01</div>
+    <div class="headline" style="top:262px;font-size:92px;">ALTF4</div>
+    <div class="quote">팀원 간 간트 차트로 진행 상황을 공유하며, 구현 범위와 일정 흐름을 명확하게 맞췄습니다.</div>
+
+    <div class="meta-card" style="left:714px;top:166px;"><div class="meta-label">기간</div><div class="meta-value">2023.06.01 - 2023.06.30</div></div>
+    <div class="meta-card" style="left:986px;top:166px;"><div class="meta-label">구성</div><div class="meta-value">2인 개발</div></div>
+    <div class="meta-card" style="left:714px;top:292px;"><div class="meta-label">역할</div><div class="meta-value">기획 · 플레이어 · UI/UX · Sound</div></div>
+    <div class="meta-card" style="left:986px;top:292px;"><div class="meta-label">엔진</div><div class="meta-value">Unity</div></div>
+    <div class="meta-card" style="left:714px;top:418px;"><div class="meta-label">장르</div><div class="meta-value">플랫폼 게임</div></div>
+    <div class="meta-card" style="left:986px;top:418px;"><div class="meta-label">플랫폼</div><div class="meta-value">PC</div></div>
+    <div class="link-box">[GitHub 전체 코드]   [영상 링크]</div>
+  </section>
+
+  <section class="page" data-document-role="page" data-label="Code Production Style">
+    <div class="grid"></div>
+    <div class="circle-blue"></div>
+    <div class="circle-orange"></div>
+    <div class="brand">Bae Minjae</div>
+    <div class="eyebrow">CODE PRODUCTION STYLE</div>
+    <div class="page-number">05</div>
+    <div class="headline small">요구사항에서<br>구현 구조까지</div>
+
+    <div class="flow-card" style="left:104px;"><div class="flow-number">1</div><div class="flow-text">기능 요구사항 파악</div></div>
+    <div class="arrow" style="left:292px;"></div>
+    <div class="flow-card" style="left:330px;"><div class="flow-number">2</div><div class="flow-text">C# Script 기능명 정의</div></div>
+    <div class="arrow" style="left:518px;"></div>
+    <div class="flow-card" style="left:556px;"><div class="flow-number">3</div><div class="flow-text">구현 목적 작성</div></div>
+    <div class="arrow" style="left:744px;"></div>
+    <div class="flow-card" style="left:782px;"><div class="flow-number">4</div><div class="flow-text">필요 요소 분리</div></div>
+    <div class="arrow" style="left:970px;"></div>
+    <div class="flow-card" style="left:1008px;"><div class="flow-number">5</div><div class="flow-text">세부 코드 작성</div></div>
+
+    <div class="section-title">Efficient Code</div>
+    <div class="pattern-row">
+      <div class="tag primary">Factory Pattern</div>
+      <div class="tag">Singleton Pattern</div>
+      <div class="tag">Property</div>
+      <div class="tag primary">Why-What-How</div>
+      <div class="tag">공식 문서 / 커뮤니티</div>
+    </div>
+  </section>
+</body>
+</html>
