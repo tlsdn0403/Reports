@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>박신우 NGP 포트폴리오</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <section class="page intro-page" data-document-role="page" data-label="07 NGP 프로젝트 소개">
+    <header class="page-header">
+      <div>
+        <p class="eyebrow">NETWORK GAME PROGRAMMING / PAGE 01</p>
+        <h1>NGP Fall Guys Network</h1>
+      </div>
+      <div class="header-side">
+        <a class="github-link" href="https://github.com/tlsdn0403/NGP_Project" aria-label="NGP Project GitHub">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .7a11.5 11.5 0 0 0-3.64 22.42c.58.11.79-.25.79-.56v-2.02c-3.22.7-3.9-1.37-3.9-1.37-.53-1.34-1.29-1.7-1.29-1.7-1.05-.72.08-.7.08-.7 1.17.08 1.78 1.2 1.78 1.2 1.04 1.78 2.72 1.27 3.38.97.1-.75.4-1.27.74-1.56-2.57-.29-5.27-1.28-5.27-5.68 0-1.25.45-2.28 1.19-3.08-.12-.29-.52-1.46.11-3.04 0 0 .97-.31 3.16 1.18a10.96 10.96 0 0 1 5.75 0c2.2-1.49 3.16-1.18 3.16-1.18.63 1.58.23 2.75.11 3.04.74.8 1.19 1.83 1.19 3.08 0 4.41-2.71 5.38-5.29 5.67.42.36.79 1.06.79 2.14v3.18c0 .31.21.68.8.56A11.5 11.5 0 0 0 12 .7Z"/></svg>
+          <span>GITHUB</span>
+        </a>
+        <span class="team-badge">TEAM PROJECT</span>
+        <span class="page-number">07</span>
+      </div>
+    </header>
+    <div class="heavy-rule"></div>
+
+    <div class="intro-grid">
+      <figure class="game-shot">
+        <img src="assets/ngp-game.png" alt="NGP Fall Guys Network 다중 클라이언트 실행 화면">
+        <figcaption>TCP/IP 기반 다중 클라이언트 캐릭터 상태 동기화</figcaption>
+      </figure>
+
+      <div class="project-meta">
+        <div class="meta-row"><b>프로젝트 이름</b><span>NGP Fall Guys Network</span></div>
+        <div class="meta-row"><b>장르</b><span>3D 네트워크 장애물 액션</span></div>
+        <div class="meta-row"><b>설명</b><span>C++ / OpenGL 로컬 게임을 TCP/IP Client–Server 구조로 확장한 팀 프로젝트</span></div>
+        <div class="meta-row"><b>개발 인원</b><span>3명</span></div>
+        <div class="meta-row role-row"><b>담당 역할</b><span>네트워크 구조 설계, Character Packet 송수신, 접속 순서 기반 번호 부여, AABB 충돌 판정</span></div>
+        <div class="meta-row"><b>개발 언어</b><span>C++</span></div>
+        <div class="meta-row"><b>사용 IDE</b><span>Visual Studio 2022</span></div>
+        <div class="meta-row"><b>기술</b><span>OpenGL · WinSock TCP/IP · GitHub</span></div>
+        <div class="meta-row"><b>제작 기간</b><span>2025.10 ~ 진행 중</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="page design-page" data-document-role="page" data-label="08 NGP 네트워크 구조 설계">
+    <header class="page-header compact">
+      <div>
+        <p class="eyebrow">NETWORK GAME PROGRAMMING / PAGE 02</p>
+        <h1>네트워크 구조 설계</h1>
+      </div>
+      <span class="page-number">08</span>
+    </header>
+    <div class="heavy-rule"></div>
+
+    <div class="design-grid">
+      <figure class="diagram-card">
+        <img src="assets/network-diagram.png" alt="서버와 클라이언트 네트워크 흐름 설계도">
+      </figure>
+
+      <div class="design-copy">
+        <div class="lead-box">
+          <span class="mini-label">DESIGN GOAL</span>
+          <h2>서버를 기준으로<br>상태 흐름을 단순화했습니다.</h2>
+          <p>접속부터 게임 종료까지 서버와 클라이언트의 책임을 나누고, 패킷이 어느 시점에 이동하는지 먼저 설계했습니다.</p>
+        </div>
+
+        <div class="process-list">
+          <article><span>01</span><div><h3>접속 및 식별</h3><p>Accept 순서에 따라 캐릭터 번호를 부여하고 클라이언트별 스레드를 생성합니다.</p></div></article>
+          <article><span>02</span><div><h3>C2S 상태 수집</h3><p>클라이언트가 입력과 Character 상태를 서버로 전송합니다.</p></div></article>
+          <article><span>03</span><div><h3>서버 판정</h3><p>서버에서 캐릭터·장애물 AABB Collision과 도착 상태를 확인합니다.</p></div></article>
+          <article><span>04</span><div><h3>S2C 상태 전파</h3><p>갱신된 상태를 각 클라이언트에 전달해 동일한 장면을 그립니다.</p></div></article>
+        </div>
+      </div>
+    </div>
+
+    <div class="packet-strip">
+      <span>Connect()</span><i></i><span>Accept() + Player ID</span><i></i><span>C2S_CHARACTER</span><i></i><span>Server Update</span><i></i><span>S2C_CHARACTER</span>
+    </div>
+  </section>
+
+  <section class="page result-page" data-document-role="page" data-label="09 NGP 개발 결과 템플릿">
+    <header class="page-header compact">
+      <div>
+        <p class="eyebrow">NETWORK GAME PROGRAMMING / PAGE 03</p>
+        <h1>개발 결과 및 검증</h1>
+      </div>
+      <span class="page-number">09</span>
+    </header>
+    <div class="heavy-rule"></div>
+
+    <div class="result-grid">
+      <div class="result-media">
+        <div class="result-slot primary-slot">
+          <span>RESULT IMAGE 01</span>
+          <strong>다중 클라이언트 실행 화면을 넣어주세요</strong>
+          <small>Canva에서 이 영역 위에 결과 캡처를 배치</small>
+        </div>
+        <div class="sub-slots">
+          <div class="result-slot"><span>RESULT IMAGE 02</span><strong>서버 콘솔 / 로그</strong></div>
+          <div class="result-slot"><span>RESULT IMAGE 03</span><strong>충돌 판정 장면</strong></div>
+        </div>
+      </div>
+
+      <div class="result-copy">
+        <div class="result-title">
+          <span class="mini-label">RESULT</span>
+          <h2>구현 결과를<br>세 문장으로 정리합니다.</h2>
+          <p>아래 문장은 실제 캡처와 확인 결과에 맞춰 수치·현상 중심으로 교체하면 됩니다.</p>
+        </div>
+        <div class="result-item"><b>01</b><div><h3>상태 동기화</h3><p>[클라이언트 수]개의 화면에서 캐릭터 위치와 상태가 동일하게 반영됨을 확인했습니다.</p></div></div>
+        <div class="result-item"><b>02</b><div><h3>접속 순서 식별</h3><p>접속 순서에 맞춰 캐릭터 번호가 부여되고 각 클라이언트에서 구분됨을 확인했습니다.</p></div></div>
+        <div class="result-item"><b>03</b><div><h3>AABB 충돌</h3><p>캐릭터–캐릭터, 캐릭터–장애물 충돌 판정 결과를 플레이 상태에 반영했습니다.</p></div></div>
+      </div>
+    </div>
+
+    <div class="editing-note">EDIT GUIDE · 결과 캡처 3장과 실제 검증 문장만 교체하면 완성됩니다.</div>
+  </section>
+</body>
+</html>
