@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>박신우 게임 클라이언트 포트폴리오</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="toolbar">
+    <button type="button" onclick="window.print()">PDF로 저장</button>
+  </div>
+
+  <section class="page cover" data-document-role="page" data-label="01 Cover">
+    <span class="page-no">01</span>
+    <div class="cover-copy">
+      <p class="eyebrow">GAME CLIENT PORTFOLIO</p>
+      <h1>플레이 경험을<br>구조로 구현하는<br>클라이언트 프로그래머</h1>
+      <p class="cover-name">박신우 <b>Park Shin Woo</b></p>
+      <p class="cover-contact">E-Mail&nbsp;&nbsp;tlsdn0403@gmail.com<br>GitHub&nbsp;&nbsp;github.com/tlsdn0403</p>
+    </div>
+    <div class="cover-gallery">
+      <figure class="wide"><img src="assets/infection-cover.png" alt="감염 죽음의 도시"></figure>
+      <figure><img src="assets/flickdom-cover.png" alt="FlickDom"></figure>
+      <figure><video src="assets/videos/bubble-dungeon-combat.mp4" poster="assets/bubble-rogue-poster.svg" muted playsinline preload="metadata"></video></figure>
+    </div>
+    <div class="cover-footer"><span>UNREAL ENGINE 5</span><span>UNITY</span><span>C++ · C#</span><span>WIN32 API</span></div>
+  </section>
+
+  <section class="page" data-document-role="page" data-label="02 Tech Stack">
+    <header class="header"><div><p class="eyebrow">ABOUT ME / PAGE 01</p><h2>Tech Stack</h2></div><span class="page-no">02</span></header>
+    <div class="rule"></div>
+    <div class="stack-grid">
+      <article class="stack-card featured"><span>01</span><h3>C++</h3><p>객체지향 문법과 STL을 활용해 게임 로직과 상태 구조를 구현할 수 있습니다.</p><b>Programming</b></article>
+      <article class="stack-card"><span>02</span><h3>Unreal Engine</h3><p>Actor/Component, Collision/Trace, Behavior Tree, Vehicle/Interaction 흐름을 C++로 구현했습니다.</p><b>Engine</b></article>
+      <article class="stack-card"><span>03</span><h3>Unity</h3><p>C# 기반 UI/UX, Physics, Multiplayer, WebGL 클라이언트를 개발했습니다.</p><b>Engine</b></article>
+      <article class="stack-card"><span>04</span><h3>Win32 API</h3><p>Direct2D, DirectWrite를 사용해 저용량 2D 로그라이크 게임의 화면과 시스템을 구성했습니다.</p><b>Client</b></article>
+      <article class="stack-card"><span>05</span><h3>GitHub</h3><p>브랜치 관리, 커밋 단위 정리, 팀 프로젝트 협업 기록을 관리했습니다.</p><b>Collaboration</b></article>
+      <article class="stack-card dark"><span>CORE</span><h3>입력부터 검증까지</h3><p>플레이 증상을 재현하고, 상태와 충돌 흐름을 따라가며 실행 결과로 구현을 확인합니다.</p><b>Workflow</b></article>
+    </div>
+  </section>
+
+  <section class="page" data-document-role="page" data-label="03 Project Index">
+    <header class="header"><div><p class="eyebrow">PROJECT INDEX</p><h2>주요 프로젝트</h2></div><span class="page-no">03</span></header>
+    <div class="rule"></div>
+    <div class="index-grid">
+      <article class="project-card"><img src="assets/infection-cover.png" alt="감염 죽음의 도시"><div><span>PROJECT 01</span><h3>감염: 죽음의 도시</h3><p>UE5 · C++ · 협동 TPS</p><b>Combat / Vehicle</b></div></article>
+      <article class="project-card"><video src="assets/videos/bubble-dungeon-combat.mp4" poster="assets/bubble-rogue-poster.svg" muted playsinline preload="metadata"></video><div><span>PROJECT 02</span><h3>Bubble Rogue</h3><p>C++17 · Win32 API · 1.4mb</p><b>Dungeon / Boss</b></div></article>
+      <article class="project-card"><img src="assets/ngp-game.png" alt="NGP Fall Guys Network"><div><span>PROJECT 03</span><h3>Fall Guys Network</h3><p>C++ · OpenGL · TCP/IP</p><b>Packet / Collision</b></div></article>
+      <article class="project-card"><img src="assets/flickdom-cover.png" alt="FlickDom"><div><span>PROJECT 04</span><h3>FlickDom</h3><p>Unity · WebGL · AI Tool</p><b>Board / Turn FSM</b></div></article>
+    </div>
+  </section>
+
+  <section class="page" data-document-role="page" data-label="04 Infection Overview">
+    <header class="header"><div><p class="eyebrow">PROJECT 01 / PAGE 01</p><h2>감염: 죽음의 도시</h2></div><span class="page-no">04</span></header>
+    <div class="rule"></div>
+    <div class="overview-grid">
+      <figure class="hero"><img src="assets/infection-play.jpeg" alt="감염 죽음의 도시 플레이 화면"></figure>
+      <div class="meta-card">
+        <p class="meta-lead">UE5/C++ 기반 협동 TPS 졸업작품입니다. 전투 피드백과 상호작용 흐름을 담당했습니다.</p>
+        <dl>
+          <div><dt>기간</dt><dd>2025.12.20 - 2026.07.08</dd></div>
+          <div><dt>개발인원</dt><dd>3인팀</dd></div>
+          <div><dt>엔진</dt><dd>Unreal Engine 5 · C++</dd></div>
+          <div><dt>장르</dt><dd>Co-op TPS · Zombie Survival</dd></div>
+          <div><dt>담당 역할</dt><dd>Client Programmer</dd></div>
+          <div><dt>작품 설명</dt><dd>파밍, 전투, 트럭 이동으로 이어지는 좀비 생존 플레이를 구현했습니다.</dd></div>
+        </dl>
+        <div class="tag-row"><span>Dismemberment</span><span>Truck Interaction</span><span>AI</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="page" data-document-role="page" data-label="05 Infection Communication">
+    <header class="header"><div><p class="eyebrow">PROJECT 01 / PAGE 02</p><h2>팀원과의 소통방법</h2></div><span class="page-no">05</span></header>
+    <div class="rule"></div>
+    <div class="two-col">
+      <div class="text-card">
+        <span class="label">COMMUNICATION</span>
+        <h3>계획서와 보고서로<br>진행 상황을 공유했습니다.</h3>
+        <p>조장으로서 개발 일정을 함께 짜고, 보고서를 매주 전송하며 서로의 진행상황을 공유하였습니다.</p>
+        <ul>
+          <li>계획서 작성으로 구현 범위와 일정 기준을 정리</li>
+          <li>주차별 보고서로 완료 항목과 다음 작업을 공유</li>
+          <li>코드 작성 범위를 나누고 구현 흐름을 맞춰 진행</li>
+        </ul>
+      </div>
+      <div class="evidence-grid">
+        <article class="thumb-card"><img src="assets/infection-cover.png" alt="프로젝트 대표 이미지"><div><span>PLAN</span><h3>일정 공유</h3><p>기능 단위로 필요한 작업을 나누어 진행했습니다.</p></div></article>
+        <article class="thumb-card"><img src="assets/infection-diagram.png" alt="구조 설계 자료"><div><span>REPORT</span><h3>진행 보고</h3><p>문제, 원인, 수정 방향을 문서로 남겼습니다.</p></div></article>
+      </div>
+    </div>
+  </section>
+
+  <section class="page" data-document-role="page" data-label="06 Infection Dismemberment">
+    <header class="header"><div><p class="eyebrow">PROJECT 01 / PAGE 03</p><h2>좀비 신체 분리</h2></div><span class="page-no">06</span></header>
+    <div class="rule"></div>
+    <div class="two-col">
+      <div class="text-card">
+        <span class="label">STRUCTURE</span>
+        <h3>BoneName 기반으로<br>피격 부위를 구분했습니다.</h3>
+        <p>총알 피격 위치를 `FHitResult`와 BoneName으로 전달하고, 부위별 내구도 감소와 Mesh 분리, 하체 분리 후 기어가기 상태 전환까지 연결했습니다.</p>
+        <figure class="diagram"><img src="assets/infection-diagram.png" alt="좀비 신체 분리 구조 설계"></figure>
+      </div>
+      <div class="evidence-grid">
+        <article class="thumb-card"><img src="assets/infection-result-1.jpeg" alt="좀비 신체분리 결과"><div><span>RESULT 01</span><h3>부위 판정</h3><p>피격 지점에 따라 분리 대상 부위를 결정합니다.</p></div></article>
+        <article class="thumb-card"><img src="assets/infection-result-2.jpeg" alt="하체 분리 후 기어가기"><div><span>RESULT 02</span><h3>상태 전환</h3><p>다리 분리 이후 Crawling 상태로 전환합니다.</p></div></article>
+      </div>
+    </div>
+  </section>
+
+  <section class="page" data-document-role="page" data-label="07 Truck Interaction">
+    <header class="header"><div><p class="eyebrow">PROJECT 01 / PAGE 04</p><h2>Truck Interaction</h2></div><span class="page-no">07</span></header>
+    <div class="rule"></div>
+    <p class="section-intro">트럭을 단순 이동 수단이 아니라 적재, 기관총, 운전이 연결되는 상호작용 허브로 구성했습니다.</p>
+    <div class="feature-grid">
+      <article class="thumb-card"><img src="assets/truck-load.jpeg" alt="아이템 적재"><div><span>TRACK 01</span><h3>아이템 적재</h3><p>Trace로 적재 대상을 찾고 트럭의 적재 위치와 상태를 갱신합니다.</p></div></article>
+      <article class="thumb-card"><img src="assets/truck-gun.jpeg" alt="기관총 사용"><div><span>TRACK 02</span><h3>기관총 사용</h3><p>탑승 위치, 조작 권한, 발사 흐름을 하나의 상호작용으로 연결합니다.</p></div></article>
+      <article class="thumb-card"><img src="assets/truck-drive.jpeg" alt="트럭 운전"><div><span>TRACK 03</span><h3>트럭 운전</h3><p>Vehicle 입력과 카메라 전환을 연결해 탑승부터 운전까지 완성합니다.</p></div></article>
+    </div>
+  </section>
+
+  <section class="page" data-document-role="page" data-label="08 Bubble Rogue Overview">
+    <header class="header"><div><p class="eyebrow">BUBBLE ROGUE / PAGE 01</p><h2>Bubble Rogue</h2></div><span class="page-no">08</span></header>
+    <div class="rule"></div>
+    <div class="overview-grid">
+      <figure class="hero"><video src="assets/videos/bubble-dungeon-combat.mp4" poster="assets/bubble-rogue-poster.svg" controls muted playsinline preload="metadata"></video></figure>
+      <div class="meta-card">
+        <p class="meta-lead">버블파이터를 모티브로 한, 1.4mb 공모전 제출 저용량 로그라이크 게임입니다.</p>
+        <dl>
+          <div><dt>프로젝트 이름</dt><dd>BUBBLE ROGUE</dd></div>
+          <div><dt>장르</dt><dd>2D 물총 액션 로그라이크</dd></div>
+          <div><dt>개발인원</dt><dd>1인 개발</dd></div>
+          <div><dt>개발 언어</dt><dd>C++17</dd></div>
+          <div><dt>사용 IDE</dt><dd>Visual Studio 2022</dd></div>
+          <div><dt>기술</dt><dd>Win32 API · Direct2D · DirectWrite</dd></div>
+          <div><dt>빌드 크기</dt><dd>984.5 KiB / 제한의 68.37%</dd></div>
+        </dl>
+      </div>
+    </div>
+  </section>
+
+  <section class="page" data-document-role="page" data-label="09 Bubble Rogue Dungeon And Boss">
+    <header class="header"><div><p class="eyebrow">BUBBLE ROGUE / PAGE 02</p><h2>핵심 구현 기능</h2></div><span class="page-no">09</span></header>
+    <div class="rule"></div>
+    <p class="section-intro">방, 문, 통로를 매번 다시 생성하고, 레벨별 보스 패턴과 보상 루프를 연결했습니다.</p>
+    <div class="video-grid">
+      <article class="video-card"><video src="assets/videos/bubble-dungeon-combat.mp4" poster="assets/bubble-rogue-poster.svg" controls muted playsinline preload="metadata"></video><div><span>01 / DUNGEON</span><h3>랜덤 던전 전투</h3><p>방 단위 전투 흐름과 적 등장, 클리어 후 이동 루프를 구성했습니다.</p></div></article>
+      <article class="video-card"><video src="assets/videos/bubble-first-boss.mp4" poster="assets/bubble-rogue-poster.svg" controls muted playsinline preload="metadata"></video><div><span>02 / BOSS</span><h3>첫 보스전</h3><p>초기 보스 패턴과 플레이어 공격 회피 흐름을 확인할 수 있습니다.</p></div></article>
+      <article class="video-card"><video src="assets/videos/bubble-second-boss.mp4" poster="assets/bubble-rogue-poster.svg" controls muted playsinline preload="metadata"></video><div><span>03 / BOSS</span><h3>두 번째 보스전</h3><p>단계별 보스 패턴을 분리해 진행 난이도를 확장했습니다.</p></div></article>
+    </div>
+  </section>
+
+  <section class="page" data-document-role="page" data-label="10 Bubble Rogue Systems">
+    <header class="header"><div><p class="eyebrow">BUBBLE ROGUE / PAGE 03</p><h2>성장·강화·시스템</h2></div><span class="page-no">10</span></header>
+    <div class="rule"></div>
+    <p class="section-intro">무기 제작, 공용 강화, 광산 채광 등 성장하는 재미를 느낄 수 있는 시스템을 만들었습니다.</p>
+    <div class="video-grid compact-videos">
+      <article class="video-card"><video src="assets/videos/bubble-third-boss.mp4" poster="assets/bubble-rogue-poster.svg" controls muted playsinline preload="metadata"></video><div><span>04 / BOSS</span><h3>세 번째 보스전</h3><p>레벨 진행에 맞춘 보스 패턴과 보상 구조를 연결했습니다.</p></div></article>
+      <article class="video-card"><video src="assets/videos/bubble-zombie-king.mp4" poster="assets/bubble-rogue-poster.svg" controls muted playsinline preload="metadata"></video><div><span>05 / BOSS</span><h3>좀비킹 전투</h3><p>대형 보스 패턴과 전투 루프를 영상으로 확인할 수 있습니다.</p></div></article>
+      <article class="video-card"><video src="assets/videos/bubble-bomber.mp4" poster="assets/bubble-rogue-poster.svg" controls muted playsinline preload="metadata"></video><div><span>06 / SYSTEM</span><h3>폭탄광 패턴</h3><p>특수 적과 폭발 패턴을 통해 전투 리듬을 다르게 구성했습니다.</p></div></article>
+      <article class="text-card"><span class="label">IMPLEMENTATION</span><h3>저용량 제한 안에서<br>플레이 루프를 완성</h3><p>Win32 API 기반 구조에서 던전 생성, 보스전, 강화 시스템을 묶어 반복 플레이가 가능한 흐름으로 정리했습니다.</p><ul><li>랜덤 던전 생성</li><li>보스 패턴 분기</li><li>성장 및 강화 루프</li></ul></article>
+    </div>
+  </section>
+
+  <section class="page has-actions" data-document-role="page" data-label="11 NGP Overview">
+    <div class="top-actions"><a class="action-btn" href="https://github.com/tlsdn0403/NGP_Project" target="_blank" rel="noreferrer">GITHUB</a><span class="badge">Team Project</span></div>
+    <header class="header"><div><p class="eyebrow">NETWORK GAME PROGRAMMING / PAGE 01</p><h2>Fall Guys Network</h2></div><span class="page-no">11</span></header>
+    <div class="rule"></div>
+    <div class="overview-grid">
+      <figure class="hero"><img src="assets/ngp-game.png" alt="NGP 다중 클라이언트 실행"></figure>
+      <div class="meta-card">
+        <p class="meta-lead">C++ / OpenGL 로컬 게임을 네트워크 TCP/IP Client-Server 구조로 확장한 팀 프로젝트입니다.</p>
+        <dl>
+          <div><dt>프로젝트 이름</dt><dd>NGP Fall Guys Network</dd></div>
+          <div><dt>장르</dt><dd>3D 네트워크 장애물 액션</dd></div>
+          <div><dt>개발 인원</dt><dd>3명</dd></div>
+          <div><dt>담당 역할</dt><dd>네트워크 구조 설계, Character Packet 송수신, 접속 순서 기반 번호 부여, AABB 충돌 판정</dd></div>
+          <div><dt>개발 언어</dt><dd>C++</dd></div>
+          <div><dt>기술</dt><dd>OpenGL · WinSock TCP/IP · GitHub</dd></div>
+          <div><dt>제작 기간</dt><dd>2025.11.2 ~ 2025.12.5</dd></div>
+        </dl>
+      </div>
+    </div>
+  </section>
+
+  <section class="page" data-document-role="page" data-label="12 NGP Network Design">
+    <header class="header"><div><p class="eyebrow">NETWORK GAME PROGRAMMING / PAGE 02</p><h2>네트워크 구조 설계</h2></div><span class="page-no">12</span></header>
+    <div class="rule"></div>
+    <div class="network-layout">
+      <figure class="network-diagram"><img src="assets/network-diagram.png" alt="서버 클라이언트 설계도"></figure>
+      <div>
+        <div class="dark-box"><span class="label">DESIGN GOAL</span><h3>Low Level Design</h3><p>접속부터 렌더링까지 상태 이동 시점을 나누고 서버에서 충돌과 도착 상태를 확인하도록 설계했습니다.</p></div>
+        <div class="step-grid">
+          <article><b>01</b><h4>접속 및 식별</h4><p>Accept 순서에 따라 캐릭터 번호를 부여하고 클라이언트별 스레드를 생성</p></article>
+          <article><b>02</b><h4>C2S 상태 수집</h4><p>클라이언트가 입력과 Character 상태를 서버로 전송</p></article>
+          <article><b>03</b><h4>서버 판정</h4><p>서버에서 캐릭터·장애물 AABB Collision과 도착 상태 확인</p></article>
+          <article><b>04</b><h4>S2C 상태 전파</h4><p>갱신된 상태를 각 클라이언트에 전달해 동일한 장면을 렌더링</p></article>
+        </div>
+      </div>
+    </div>
+    <div class="flow-strip"><span>Connect()</span><i></i><span>Accept() + Player ID</span><i></i><span>C2S_CHARACTER</span><i></i><span>Server Update</span><i></i><span>S2C_CHARACTER</span></div>
+  </section>
+
+  <section class="page" data-document-role="page" data-label="13 NGP Roles">
+    <header class="header"><div><p class="eyebrow">NETWORK GAME PROGRAMMING / PAGE 03</p><h2>이 프로젝트에서 맡은 역할</h2></div><span class="page-no">13</span></header>
+    <div class="rule"></div>
+    <div class="two-col">
+      <div class="text-card">
+        <span class="label">MY SCOPE</span>
+        <h3>플레이어와 장애물의<br>상태 동기화</h3>
+        <p>클라이언트 입력을 서버로 보내고, 서버가 갱신한 캐릭터 상태를 다시 모든 클라이언트에 전달하는 흐름을 구현했습니다.</p>
+        <ul>
+          <li>플레이어간 동기화</li>
+          <li>플레이어, 장애물 동기화</li>
+          <li>AABB 충돌 판정 결과 반영</li>
+        </ul>
+      </div>
+      <div class="evidence-grid">
+        <article class="thumb-card"><img src="assets/ngp-game.png" alt="플레이어 동기화"><div><span>SYNC</span><h3>플레이어 동기화</h3><p>접속 순서별 캐릭터 번호와 상태를 화면에 반영했습니다.</p></div></article>
+        <article class="thumb-card"><img src="assets/network-diagram.png" alt="네트워크 구조"><div><span>PACKET</span><h3>상태 전달 흐름</h3><p>C2S/S2C 패킷 구조로 상태 갱신 경로를 단순화했습니다.</p></div></article>
+      </div>
+    </div>
+  </section>
+
+  <section id="flickdom-overview" class="page has-actions" data-document-role="page" data-label="14 FlickDom Overview">
+    <div class="top-actions">
+      <a class="action-btn" href="https://github.com/AACHANJINAA/FlickDom" target="_blank" rel="noreferrer">GITHUB</a>
+      <a class="action-btn video" href="https://www.youtube.com/watch?v=ddM9ggItGwQ" target="_blank" rel="noreferrer">VIDEO</a>
+      <a class="action-btn play" href="https://fantastic-pothos-5ab193.netlify.app/" target="_blank" rel="noreferrer">GAME PLAY</a>
+      <span class="badge">Team Project</span>
+    </div>
+    <header class="header"><div><p class="eyebrow">FlickDom / PAGE 01</p><h2>FlickDom <span style="font-size:28px;">(AI VIBE CODING)</span></h2></div><span class="page-no">14</span></header>
+    <div class="rule"></div>
+    <div class="overview-grid">
+      <figure class="hero"><img src="assets/flickdom-cover.png" alt="FlickDom 대표 화면"></figure>
+      <div class="meta-card">
+        <dl>
+          <div><dt>프로젝트 이름</dt><dd>FlickDom (AI VIBE CODING)</dd></div>
+          <div><dt>장르</dt><dd>1 VS 1 전략 플릭 보드게임</dd></div>
+          <div><dt>설명</dt><dd>디스크를 튕겨 보드 칸을 차지하고 카드 패턴을 완성해 점수를 겨루는 물리 기반 파티 게임</dd></div>
+          <div><dt>개발 인원</dt><dd>팀 프로젝트</dd></div>
+          <div><dt>담당 역할</dt><dd>Unity MCP 기반 구현 반복, 멀티플레이 흐름, UI/UX, 사운드 제작 및 적용</dd></div>
+          <div><dt>개발 언어</dt><dd>C#</dd></div>
+          <div><dt>사용 IDE</dt><dd>Unity 6 Editor, VS Code, Blender, Substance 3D Designer</dd></div>
+          <div><dt>AI 모델</dt><dd>GPT-5 Codex, Unity MCP, Blender MCP, Substance MCP, VARCO AI Sound</dd></div>
+          <div><dt>제작 기간</dt><dd>2026.07.01 ~ 2026.08.10</dd></div>
+        </dl>
+      </div>
+    </div>
+  </section>
+
+  <section class="page" data-document-role="page" data-label="15 AI MCP Development">
+    <header class="header"><div><p class="eyebrow">AI 활용 능력 / PAGE 01</p><h2>AI/MCP 기반 개발</h2></div><span class="page-no">15</span></header>
+    <div class="rule"></div>
+    <div class="ai-list">
+      <article><div><span>01 / UNITY MCP</span><h3>Unity Editor와 AI 에이전트 연결</h3><p>씬, 오브젝트, 컴포넌트 작업을 빠르게 확인하고 반복했습니다. AI 결과는 실행 화면과 코드 흐름으로 다시 검증했습니다.</p></div><img src="assets/unity-mcp.png" alt="Unity MCP"></article>
+      <article><div><span>02 / BLENDER MCP</span><h3>3D 리소스 비율과 배치 목적 정리</h3><p>보드, 디스크, 소품 리소스의 비율과 배치 목적을 정리하며 3D 제작 과정을 보조했습니다.</p></div><img src="assets/blender-mcp.png" alt="Blender MCP"></article>
+    </div>
+  </section>
+
+  <section class="page" data-document-role="page" data-label="16 FlickDom Roles">
+    <header class="header"><div><p class="eyebrow">FlickDom / PAGE 02</p><h2>담당 역할</h2></div><span class="page-no">16</span></header>
+    <div class="rule"></div>
+    <div class="role-list">
+      <article class="role-card"><div><span>01</span><h3>Client</h3></div><div><h4>보드 규칙과 플레이 흐름 구현</h4><p>5×5 Board 점령 Logic, Cell 선택·배치 후보 처리, Card Pattern Matching, Stage 진행, Monkey 조작·Camera 흐름, Main Menu를 구현했습니다.</p></div></article>
+      <article class="role-card"><div><span>02</span><h3>Server</h3></div><div><h4>턴 FSM과 멀티플레이 상태 전환</h4><p>초기 Host/Client 동기화 기반 위에서 FSM 기반 턴 흐름과 멀티플레이 상태 전환을 연결하고 Network 구조를 수정했습니다.</p></div></article>
+      <article class="role-card"><div><span>03</span><h3>Build</h3></div><div><h4>WebGL 배포와 브라우저 검증</h4><p>WebGL Build·배포 환경을 구성하고 실제 브라우저에서 접속, 게임 진행, 상태 동기화를 검증해 최종 Release까지 마무리했습니다.</p></div></article>
+    </div>
+  </section>
+
+  <section class="page thanks" data-document-role="page" data-label="17 Thank You">
+    <span class="page-no">17</span>
+    <div>
+      <p class="eyebrow">THANK YOU</p>
+      <h1>읽어주셔서<br>감사합니다.</h1>
+      <p>박신우 · 게임 클라이언트 프로그래머</p>
+      <a href="mailto:tlsdn0403@gmail.com">tlsdn0403@gmail.com</a>
+      <a href="https://github.com/tlsdn0403">github.com/tlsdn0403</a>
+    </div>
+    <div class="thanks-cards"><span>UNREAL ENGINE 5</span><span>UNITY</span><span>C++ · C#</span><span>WIN32 API</span></div>
+  </section>
+</body>
+</html>
+

@@ -1,0 +1,11 @@
+{"kind":"deck","id":"pr/eiccud","name":"Deck"}
+{"kind":"layout","layoutId":"57a9a3ef-8d4f-4adc-a317-e633a1e49846","name":"Master","type":"master"}
+{"kind":"layout","layoutId":"f294d8e7-cb16-43c6-84f8-be557dcad548","name":"Title Slide","type":"title"}
+{"kind":"slide","id":"sl/rdbyzy","slide":1,"title":"Slide 1","textShapes":0}
+{"kind":"shape","id":"sh/z21obadk","slide":1,"name":"github-link-hotspot","bbox":[1050,22,99,32]}
+{"kind":"shape","id":"sh/e18725cz","slide":1,"name":"video-link-hotspot","bbox":[1161,22,83,32]}
+{"kind":"image","id":"im/1gvqx43e","slide":1,"name":"","alt":"FlickDom portfolio page 1","bbox":[0,0,1280,720]}
+{"kind":"notes","id":"nt/rdbyzy","slide":1,"text":""}
+{"kind":"slide","id":"sl/kg10dh","slide":2,"title":"Slide 2","textShapes":0}
+{"kind":"image","id":"im/610na5o3","slide":2,"name":"","alt":"FlickDom portfolio page 2","bbox":[0,0,1280,720]}
+{"kind":"notes","id":"nt/kg10dh","slide":2,"text":""}

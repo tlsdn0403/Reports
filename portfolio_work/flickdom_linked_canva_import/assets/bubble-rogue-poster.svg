@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-label="Bubble Rogue video poster">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0f172a"/>
+      <stop offset="0.55" stop-color="#164e63"/>
+      <stop offset="1" stop-color="#312e81"/>
+    </linearGradient>
+    <radialGradient id="bubble" cx="35%" cy="28%" r="70%">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.95"/>
+      <stop offset="0.45" stop-color="#7dd3fc" stop-opacity="0.58"/>
+      <stop offset="1" stop-color="#0ea5e9" stop-opacity="0.1"/>
+    </radialGradient>
+  </defs>
+  <rect width="1280" height="720" fill="url(#bg)"/>
+  <g opacity="0.7">
+    <circle cx="1010" cy="126" r="68" fill="url(#bubble)"/>
+    <circle cx="1132" cy="258" r="42" fill="url(#bubble)"/>
+    <circle cx="214" cy="552" r="88" fill="url(#bubble)"/>
+    <circle cx="356" cy="470" r="34" fill="url(#bubble)"/>
+    <circle cx="108" cy="164" r="38" fill="url(#bubble)"/>
+  </g>
+  <g fill="none" stroke="#38bdf8" stroke-width="5" opacity="0.42">
+    <path d="M214 320c120-92 230-92 330 0s214 92 342 0 225-92 305 0"/>
+    <path d="M0 604c113-70 226-70 339 0s226 70 339 0 226-70 339 0 176 70 263 0"/>
+  </g>
+  <rect x="78" y="82" width="1124" height="556" rx="34" fill="#0b1120" opacity="0.46" stroke="#67e8f9" stroke-opacity="0.42"/>
+  <text x="112" y="170" fill="#a5f3fc" font-family="Arial, sans-serif" font-size="28" font-weight="800">C++17 · Win32 API · Direct2D · DirectWrite</text>
+  <text x="112" y="322" fill="#ffffff" font-family="Arial, sans-serif" font-size="108" font-weight="900">BUBBLE ROGUE</text>
+  <text x="118" y="385" fill="#e0f2fe" font-family="Arial, sans-serif" font-size="32" font-weight="700">2D Water Gun Action Roguelike</text>
+  <g transform="translate(112 456)">
+    <rect width="206" height="58" rx="10" fill="#6256f6"/>
+    <text x="103" y="38" text-anchor="middle" fill="#ffffff" font-family="Arial, sans-serif" font-size="18" font-weight="900">RANDOM DUNGEON</text>
+    <rect x="226" width="146" height="58" rx="10" fill="#14b8a6"/>
+    <text x="299" y="38" text-anchor="middle" fill="#ffffff" font-family="Arial, sans-serif" font-size="18" font-weight="900">BOSS</text>
+    <rect x="392" width="162" height="58" rx="10" fill="#f43f5e"/>
+    <text x="473" y="38" text-anchor="middle" fill="#ffffff" font-family="Arial, sans-serif" font-size="18" font-weight="900">UPGRADE</text>
+  </g>
+</svg>

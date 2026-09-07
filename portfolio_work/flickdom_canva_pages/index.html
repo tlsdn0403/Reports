@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=1366, initial-scale=1" />
+  <title>FlickDom Portfolio Pages</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: #eceff4;
+      font-family: "Pretendard", "Noto Sans KR", "Malgun Gothic", Arial, sans-serif;
+      color: #111827;
+    }
+    .page {
+      width: 1366px;
+      height: 768px;
+      padding: 26px 28px 24px;
+      background: #f8fafc;
+      position: relative;
+      overflow: hidden;
+    }
+    .eyebrow {
+      color: #6254f3;
+      font-size: 17px;
+      font-weight: 800;
+      letter-spacing: 0;
+      margin: 0 0 4px;
+    }
+    h1 {
+      margin: 0;
+      color: #6254f3;
+      font-size: 54px;
+      line-height: 1;
+      letter-spacing: 0;
+      font-weight: 900;
+    }
+    h1 .sub {
+      font-size: 27px;
+      vertical-align: baseline;
+      margin-left: 12px;
+      font-weight: 900;
+    }
+    .rule {
+      height: 3px;
+      background: #1f2937;
+      width: calc(100% - 20px);
+      margin-top: 10px;
+    }
+    .actions {
+      position: absolute;
+      right: 34px;
+      top: 24px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .pill {
+      border: 1px solid #cbd5e1;
+      background: #ffffff;
+      color: #111827;
+      border-radius: 999px;
+      padding: 7px 14px;
+      font-size: 14px;
+      line-height: 1;
+      font-weight: 900;
+      text-decoration: none;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, .08);
+    }
+    .pill.video {
+      color: #dc2626;
+    }
+    .badge {
+      position: absolute;
+      right: 36px;
+      top: 64px;
+      background: #6254f3;
+      color: white;
+      border-radius: 8px;
+      padding: 9px 16px;
+      font-size: 14px;
+      font-weight: 900;
+    }
+    .page-one-grid {
+      display: grid;
+      grid-template-columns: 744px 1fr;
+      gap: 24px;
+      margin-top: 34px;
+      align-items: stretch;
+    }
+    .hero-shot {
+      width: 744px;
+      height: 416px;
+      object-fit: cover;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(15, 23, 42, .23);
+      margin-top: 36px;
+    }
+    .info-card {
+      background: #ffffff;
+      border: 1px solid #d7dee8;
+      border-radius: 12px;
+      padding: 46px 48px;
+      min-height: 560px;
+      box-shadow: 0 4px 16px rgba(15, 23, 42, .12);
+    }
+    .info-row {
+      display: grid;
+      grid-template-columns: 112px 1fr;
+      gap: 24px;
+      align-items: start;
+      padding: 9px 0;
+      border-bottom: 1px solid #eef2f7;
+    }
+    .info-row:last-child { border-bottom: 0; }
+    .label {
+      font-size: 17px;
+      font-weight: 900;
+      text-align: right;
+      color: #111827;
+      line-height: 1.35;
+    }
+    .value {
+      font-size: 17px;
+      font-weight: 800;
+      line-height: 1.35;
+      color: #111827;
+    }
+    .accent {
+      border-left: 4px solid #0ea5e9;
+      padding-left: 24px;
+    }
+    .systems {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 10px;
+    }
+    .system-card {
+      background: #ffffff;
+      border: 1px solid #dde5ef;
+      border-radius: 8px;
+      overflow: hidden;
+      min-height: 365px;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, .12);
+    }
+    .system-card img {
+      width: 100%;
+      height: 228px;
+      object-fit: cover;
+      display: block;
+    }
+    .system-copy {
+      padding: 18px 18px 16px;
+    }
+    .system-copy h2 {
+      margin: 0 0 9px;
+      color: #6254f3;
+      font-size: 22px;
+      line-height: 1.1;
+      font-weight: 900;
+    }
+    .system-copy p {
+      margin: 0;
+      font-size: 15px;
+      line-height: 1.4;
+      font-weight: 800;
+      color: #1f2937;
+    }
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-top: 14px;
+    }
+    .flow-item {
+      display: grid;
+      grid-template-columns: 80px 1fr;
+      gap: 12px;
+      align-items: center;
+      background: #ffffff;
+      border: 1px solid #dde5ef;
+      border-radius: 8px;
+      padding: 10px;
+      min-height: 78px;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, .08);
+    }
+    .flow-item img {
+      width: 80px;
+      height: 50px;
+      object-fit: cover;
+      border-radius: 4px;
+    }
+    .flow-item h3 {
+      margin: 0 0 4px;
+      color: #6254f3;
+      font-size: 14px;
+      line-height: 1.05;
+      font-weight: 900;
+    }
+    .flow-item p {
+      margin: 0;
+      color: #111827;
+      font-size: 12px;
+      line-height: 1.25;
+      font-weight: 800;
+    }
+    .note {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      gap: 18px;
+      align-items: center;
+      margin-top: 14px;
+      background: #f1f8ff;
+      border: 1px solid #dbeafe;
+      border-left: 8px solid #0ea5e9;
+      border-radius: 8px;
+      padding: 18px 22px;
+      min-height: 82px;
+    }
+    .note h2 {
+      margin: 0;
+      color: #0ea5e9;
+      font-size: 22px;
+      line-height: 1.35;
+      font-weight: 900;
+    }
+    .note p {
+      margin: 0;
+      color: #111827;
+      font-size: 17px;
+      line-height: 1.45;
+      font-weight: 850;
+    }
+  </style>
+</head>
+<body>
+  <section class="page" data-document-role="page" data-label="FlickDom Page 01">
+    <div class="eyebrow">FlickDom / PAGE 01</div>
+    <h1>FlickDom <span class="sub">(AI VIBE CODING)</span></h1>
+    <div class="rule"></div>
+    <div class="actions">
+      <a class="pill" href="https://github.com/AACHANJINAA/FlickDom">GITHUB</a>
+      <a class="pill video" href="https://www.youtube.com/watch?v=ddM9ggItGwQ&feature=youtu.be">VIDEO</a>
+    </div>
+    <div class="badge">Team Project</div>
+    <div class="page-one-grid">
+      <img class="hero-shot" src="assets/flickdom-cover.png" alt="FlickDom title screen" />
+      <div class="info-card">
+        <div class="accent">
+          <div class="info-row">
+            <div class="label">프로젝트<br />이름</div>
+            <div class="value">FlickDom (AI VIBE CODING)</div>
+          </div>
+          <div class="info-row">
+            <div class="label">장르</div>
+            <div class="value">1 VS 1 전략 플릭 보드게임</div>
+          </div>
+          <div class="info-row">
+            <div class="label">설명</div>
+            <div class="value">디스크를 튕겨 보드 칸을 차지하고 카드 패턴을 완성해 점수를 겨루는 물리 기반 파티 게임</div>
+          </div>
+          <div class="info-row">
+            <div class="label">개발 인원</div>
+            <div class="value">팀 프로젝트</div>
+          </div>
+          <div class="info-row">
+            <div class="label">담당 역할</div>
+            <div class="value">Unity MCP 기반 구현 반복, 멀티플레이 흐름, UI/UX, 사운드 제작 및 적용</div>
+          </div>
+          <div class="info-row">
+            <div class="label">개발 언어</div>
+            <div class="value">C#</div>
+          </div>
+          <div class="info-row">
+            <div class="label">사용 IDE</div>
+            <div class="value">Unity 6 Editor, VS Code, Blender, Substance 3D Designer</div>
+          </div>
+          <div class="info-row">
+            <div class="label">AI 모델</div>
+            <div class="value">GPT-5 Codex, Unity MCP, Blender MCP, Substance MCP, VARCO AI Sound</div>
+          </div>
+          <div class="info-row">
+            <div class="label">제작 기간</div>
+            <div class="value">2026.07.01 ~ 2026.08.10</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="page" data-document-role="page" data-label="FlickDom Page 02">
+    <div class="eyebrow">FlickDom / PAGE 02</div>
+    <h1>게임 시스템</h1>
+    <div class="rule"></div>
+    <div class="systems">
+      <article class="system-card">
+        <img src="assets/flickdom-goal.png" alt="FlickDom card pattern goal" />
+        <div class="system-copy">
+          <h2>목표</h2>
+          <p>3개의 디스크로 보드 칸을 점령하고 카드 패턴을 완성합니다.</p>
+        </div>
+      </article>
+      <article class="system-card">
+        <img src="assets/flickdom-control.png" alt="FlickDom flick control" />
+        <div class="system-copy">
+          <h2>조작</h2>
+          <p>디스크를 선택한 뒤 드래그 방향과 힘으로 발사해 다음 턴 전략을 만듭니다.</p>
+        </div>
+      </article>
+      <article class="system-card">
+        <img src="assets/flickdom-multi.png" alt="FlickDom multiplayer join code" />
+        <div class="system-copy">
+          <h2>멀티플레이</h2>
+          <p>Host가 방을 생성하고 Join Code를 공유하면 Client가 접속합니다.</p>
+        </div>
+      </article>
+    </div>
+    <div class="flow">
+      <div class="flow-item">
+        <img src="assets/flickdom-multi.png" alt="Host and client status" />
+        <div>
+          <h3>시작 전 준비</h3>
+          <p>Host / Client 역할 확인</p>
+        </div>
+      </div>
+      <div class="flow-item">
+        <img src="assets/flickdom-multi.png" alt="Join code input" />
+        <div>
+          <h3>Join Code 입력</h3>
+          <p>초대를 코드로 교환 및 접속</p>
+        </div>
+      </div>
+      <div class="flow-item">
+        <img src="assets/flickdom-goal.png" alt="Game status display" />
+        <div>
+          <h3>상태 표시</h3>
+          <p>점수 및 역할 상태 확인</p>
+        </div>
+      </div>
+      <div class="flow-item">
+        <img src="assets/flickdom-control.png" alt="Latest board result" />
+        <div>
+          <h3>결과 전파</h3>
+          <p>최신 보드 공유 후 시작</p>
+        </div>
+      </div>
+    </div>
+    <div class="note">
+      <h2>AI/MCP 활용으로 이어지는 제작 과정</h2>
+      <p>Unity MCP, Blender MCP, Substance MCP와 AI 사운드 제작 흐름을 함께 활용해 리소스 정리와 구현 반복 속도를 높였습니다.</p>
+    </div>
+  </section>
+</body>
+</html>
