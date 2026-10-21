@@ -1,0 +1,474 @@
+using System.Collections.Generic;
+using UnityEngine;
+
+namespace FlickDom.Gameplay
+{
+    // Keeps the physical flick board in float world space, then resolves touched logical cells.
+    public sealed class GridCellCandidateResolver : MonoBehaviour
+    {
+        [SerializeField] private int boardSize = 5;
+        [SerializeField] private float cellSize = 1f;
+        [SerializeField] private Vector3 boardOrigin = new Vector3(-2.5f, 0f, -2.5f);
+        [SerializeField] private float defaultTokenRadius = 0.5f;
+        [SerializeField] private bool includeCellsTouchedOnlyByLine = true;
+        [SerializeField] private float contactTolerance = 0.001f;
+
+        [Header("Board Visual")]
+        [SerializeField] private bool showBoardVisual;
+        [SerializeField] private Vector3 visualOffset = new Vector3(0f, 0.03f, 0f);
+        [SerializeField] private float visualCellHeight = 0.04f;
+        [SerializeField] private float visualGap = 0.035f;
+        [SerializeField] private Color visualCellColor = new Color(0.45f, 0.48f, 0.5f);
+        [SerializeField] private Color visualAlternateCellColor = new Color(0.55f, 0.58f, 0.6f);
+
+        [Header("Board Art")]
+        [SerializeField] private GameObject boardCellVisualPrefab;
+        [SerializeField] private GameObject boundaryWallVisualPrefab;
+        [SerializeField] private Material boardCellMaterialOverride;
+        [SerializeField] private Material boundaryWallMaterialOverride;
+
+        [Header("Board Boundary Walls")]
+        [SerializeField] private bool buildTopBottomBoundaryWalls = true;
+        [SerializeField] private float boundaryWallHeight = 0.7f;
+        [SerializeField] private float boundaryWallThickness = 0.28f;
+        [SerializeField] private float boundaryWallOverhang = 0.15f;
+        [SerializeField] private Color boundaryWallColor = new Color(0.42f, 0.46f, 0.5f);
+
+        private Material visualCellMaterial;
+        private Material visualAlternateCellMaterial;
+        private Material boundaryWallMaterial;
+        private bool ownsVisualCellMaterials;
+        private bool ownsBoundaryWallMaterial;
+
+        public int BoardSize
+        {
+            get { return boardSize; }
+        }
+
+        public float CellSize
+        {
+            get { return cellSize; }
+        }
+
+        public Vector3 BoardOrigin
+        {
+            get { return boardOrigin; }
+        }
+
+        public Vector3 BoardMax
+        {
+            get
+            {
+                return new Vector3(
+                    boardOrigin.x + boardSize * cellSize,
+                    boardOrigin.y,
+                    boardOrigin.z + boardSize * cellSize);
+            }
+        }
+
+        public float DefaultTokenRadius
+        {
+            get { return defaultTokenRadius; }
+        }
+
+        private void OnValidate()
+        {
+            boardSize = Mathf.Max(1, boardSize);
+            cellSize = Mathf.Max(0.01f, cellSize);
+            defaultTokenRadius = Mathf.Max(0.01f, defaultTokenRadius);
+            contactTolerance = Mathf.Max(0f, contactTolerance);
+            visualCellHeight = Mathf.Max(0.001f, visualCellHeight);
+            visualGap = Mathf.Clamp(visualGap, 0f, cellSize * 0.45f);
+            boundaryWallHeight = Mathf.Max(0.05f, boundaryWallHeight);
+            boundaryWallThickness = Mathf.Max(0.05f, boundaryWallThickness);
+            boundaryWallOverhang = Mathf.Max(0f, boundaryWallOverhang);
+        }
+
+        private void Awake()
+        {
+            if (showBoardVisual)
+            {
+                BuildBoardVisual();
+            }
+
+            if (buildTopBottomBoundaryWalls)
+            {
+                BuildTopBottomBoundaryWalls();
+            }
+        }
+
+        private void OnDestroy()
+        {
+            if (ownsVisualCellMaterials && visualCellMaterial != null)
+            {
+                Destroy(visualCellMaterial);
+            }
+
+            if (ownsVisualCellMaterials && visualAlternateCellMaterial != null)
+            {
+                Destroy(visualAlternateCellMaterial);
+            }
+
+            if (ownsBoundaryWallMaterial && boundaryWallMaterial != null)
+            {
+                Destroy(boundaryWallMaterial);
+            }
+        }
+
+        public PiecePlacementCandidate ResolveCandidate(
+            FlickDomPlayerId owner,
+            string pieceId,
+            Vector3 worldPosition)
+        {
+            return ResolveCandidate(owner, pieceId, worldPosition, defaultTokenRadius);
+        }
+
+        public PiecePlacementCandidate ResolveCandidate(
+            FlickDomPlayerId owner,
+            string pieceId,
+            Vector3 worldPosition,
+            float tokenRadius)
+        {
+            List<Vector2Int> cells = GetCandidateCells(worldPosition, tokenRadius);
+            return new PiecePlacementCandidate(pieceId, owner, worldPosition, tokenRadius, cells);
+        }
+
+        public List<Vector2Int> GetCandidateCells(Vector3 worldPosition)
+        {
+            return GetCandidateCells(worldPosition, defaultTokenRadius);
+        }
+
+        public List<Vector2Int> GetCandidateCells(Vector3 worldPosition, float tokenRadius)
+        {
+            float radius = Mathf.Max(0.01f, tokenRadius);
+            float scanPadding = radius + contactTolerance;
+
+            int minX = Mathf.FloorToInt((worldPosition.x - scanPadding - boardOrigin.x) / cellSize);
+            int maxX = Mathf.FloorToInt((worldPosition.x + scanPadding - boardOrigin.x) / cellSize);
+            int minY = Mathf.FloorToInt((worldPosition.z - scanPadding - boardOrigin.z) / cellSize);
+            int maxY = Mathf.FloorToInt((worldPosition.z + scanPadding - boardOrigin.z) / cellSize);
+
+            minX = Mathf.Clamp(minX, 0, boardSize - 1);
+            maxX = Mathf.Clamp(maxX, 0, boardSize - 1);
+            minY = Mathf.Clamp(minY, 0, boardSize - 1);
+            maxY = Mathf.Clamp(maxY, 0, boardSize - 1);
+
+            List<Vector2Int> cells = new List<Vector2Int>();
+            for (int y = minY; y <= maxY; y++)
+            {
+                for (int x = minX; x <= maxX; x++)
+                {
+                    Vector2Int cell = new Vector2Int(x, y);
+                    if (CircleIntersectsCell(worldPosition, radius, cell))
+                    {
+                        cells.Add(cell);
+                    }
+                }
+            }
+
+            return cells;
+        }
+
+        public bool IsValidCell(Vector2Int cell)
+        {
+            return cell.x >= 0 && cell.x < boardSize && cell.y >= 0 && cell.y < boardSize;
+        }
+
+        public bool IsWorldPositionInsideBoard(Vector3 worldPosition)
+        {
+            Vector3 boardMax = BoardMax;
+            return worldPosition.x >= boardOrigin.x
+                && worldPosition.x <= boardMax.x
+                && worldPosition.z >= boardOrigin.z
+                && worldPosition.z <= boardMax.z;
+        }
+
+        public Vector2Int WorldToCellByCenter(Vector3 worldPosition)
+        {
+            int x = Mathf.FloorToInt((worldPosition.x - boardOrigin.x) / cellSize);
+            int y = Mathf.FloorToInt((worldPosition.z - boardOrigin.z) / cellSize);
+            return new Vector2Int(x, y);
+        }
+
+        public bool TryGetCellWorldBounds(Vector2Int cell, out Vector3 min, out Vector3 max)
+        {
+            if (!IsValidCell(cell))
+            {
+                min = default(Vector3);
+                max = default(Vector3);
+                return false;
+            }
+
+            min = new Vector3(
+                boardOrigin.x + cell.x * cellSize,
+                boardOrigin.y,
+                boardOrigin.z + cell.y * cellSize);
+
+            max = new Vector3(min.x + cellSize, boardOrigin.y, min.z + cellSize);
+            return true;
+        }
+
+        public Vector3 GetCellCenter(Vector2Int cell)
+        {
+            return new Vector3(
+                boardOrigin.x + (cell.x + 0.5f) * cellSize,
+                boardOrigin.y,
+                boardOrigin.z + (cell.y + 0.5f) * cellSize);
+        }
+
+        private bool CircleIntersectsCell(Vector3 circleCenter, float radius, Vector2Int cell)
+        {
+            float cellMinX = boardOrigin.x + cell.x * cellSize;
+            float cellMaxX = cellMinX + cellSize;
+            float cellMinZ = boardOrigin.z + cell.y * cellSize;
+            float cellMaxZ = cellMinZ + cellSize;
+
+            float closestX = Mathf.Clamp(circleCenter.x, cellMinX, cellMaxX);
+            float closestZ = Mathf.Clamp(circleCenter.z, cellMinZ, cellMaxZ);
+            float deltaX = circleCenter.x - closestX;
+            float deltaZ = circleCenter.z - closestZ;
+            float distanceSqr = deltaX * deltaX + deltaZ * deltaZ;
+
+            if (includeCellsTouchedOnlyByLine)
+            {
+                float effectiveRadius = radius + contactTolerance;
+                return distanceSqr <= effectiveRadius * effectiveRadius;
+            }
+
+            float overlapRadius = Mathf.Max(0f, radius - contactTolerance);
+            return distanceSqr < overlapRadius * overlapRadius;
+        }
+
+        private void BuildBoardVisual()
+        {
+            CreateVisualMaterials();
+
+            GameObject rootObject = new GameObject("Generated Physical Board Grid");
+            rootObject.transform.SetParent(transform, false);
+
+            float visibleCellSize = Mathf.Max(0.01f, cellSize - visualGap);
+            for (int y = 0; y < boardSize; y++)
+            {
+                for (int x = 0; x < boardSize; x++)
+                {
+                    GameObject cellObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                    cellObject.name = "Physical Board Cell " + x + "," + y;
+                    cellObject.transform.SetParent(rootObject.transform, false);
+                    cellObject.transform.position = new Vector3(
+                        boardOrigin.x + ((x + 0.5f) * cellSize) + visualOffset.x,
+                        boardOrigin.y + visualOffset.y,
+                        boardOrigin.z + ((y + 0.5f) * cellSize) + visualOffset.z);
+                    cellObject.transform.localScale = new Vector3(visibleCellSize, visualCellHeight, visibleCellSize);
+
+                    Collider cellCollider = cellObject.GetComponent<Collider>();
+                    if (cellCollider != null)
+                    {
+                        Destroy(cellCollider);
+                    }
+
+                    Renderer cellRenderer = cellObject.GetComponent<Renderer>();
+                    Renderer[] renderers = CreateOptionalVisual(
+                        cellObject,
+                        cellRenderer,
+                        boardCellVisualPrefab,
+                        new Vector3(visibleCellSize, visualCellHeight, visibleCellSize));
+
+                    SetSharedMaterial(
+                        renderers,
+                        ((x + y) & 1) == 0 ? visualCellMaterial : visualAlternateCellMaterial);
+                }
+            }
+        }
+
+        private void CreateVisualMaterials()
+        {
+            visualCellMaterial = CreateVisualMaterial("Physical Board Cell", visualCellColor);
+            visualAlternateCellMaterial = CreateVisualMaterial("Physical Board Alternate Cell", visualAlternateCellColor);
+            ownsVisualCellMaterials = true;
+
+            if (boardCellMaterialOverride != null)
+            {
+                visualCellMaterial = boardCellMaterialOverride;
+                visualAlternateCellMaterial = boardCellMaterialOverride;
+                ownsVisualCellMaterials = false;
+            }
+        }
+
+        private void BuildTopBottomBoundaryWalls()
+        {
+            boundaryWallMaterial = boundaryWallMaterialOverride != null
+                ? boundaryWallMaterialOverride
+                : CreateVisualMaterial("Physical Board Boundary Wall", boundaryWallColor);
+            ownsBoundaryWallMaterial = boundaryWallMaterialOverride == null;
+
+            GameObject rootObject = new GameObject("Generated Physical Board Boundary Walls");
+            rootObject.transform.SetParent(transform, false);
+
+            Bounds wallBounds = GetBoundaryWallBounds();
+            float boardWidth = wallBounds.size.x;
+            float wallLength = boardWidth + boundaryWallOverhang * 2f;
+            float centerX = wallBounds.center.x;
+            float centerY = wallBounds.max.y + boundaryWallHeight * 0.5f;
+
+            CreateBoundaryWall(
+                rootObject.transform,
+                "Bottom Boundary Wall",
+                new Vector3(centerX, centerY, wallBounds.min.z - boundaryWallThickness * 0.5f),
+                new Vector3(wallLength, boundaryWallHeight, boundaryWallThickness));
+
+            CreateBoundaryWall(
+                rootObject.transform,
+                "Top Boundary Wall",
+                new Vector3(centerX, centerY, wallBounds.max.z + boundaryWallThickness * 0.5f),
+                new Vector3(wallLength, boundaryWallHeight, boundaryWallThickness));
+        }
+
+        private Bounds GetBoundaryWallBounds()
+        {
+            Vector3 center = new Vector3(
+                boardOrigin.x + (boardSize * cellSize * 0.5f),
+                boardOrigin.y,
+                boardOrigin.z + (boardSize * cellSize * 0.5f));
+            Vector3 size = new Vector3(boardSize * cellSize, 0.01f, boardSize * cellSize);
+            return new Bounds(center, size);
+        }
+
+        private void CreateBoundaryWall(Transform parent, string objectName, Vector3 position, Vector3 scale)
+        {
+            GameObject wallObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            wallObject.name = objectName;
+            wallObject.transform.SetParent(parent, false);
+            wallObject.transform.position = position;
+            wallObject.transform.localScale = scale;
+
+            Renderer wallRenderer = wallObject.GetComponent<Renderer>();
+            if (wallRenderer != null)
+            {
+                Renderer[] renderers = CreateOptionalVisual(wallObject, wallRenderer, boundaryWallVisualPrefab, scale);
+                SetSharedMaterial(renderers, boundaryWallMaterial);
+            }
+
+            Collider wallCollider = wallObject.GetComponent<Collider>();
+            if (wallCollider != null)
+            {
+                wallCollider.isTrigger = false;
+            }
+        }
+
+        private static Material CreateVisualMaterial(string materialName, Color color)
+        {
+            return RuntimeMaterialUtility.CreateMaterial(
+                materialName,
+                color,
+                "Universal Render Pipeline/Lit",
+                "Universal Render Pipeline/Simple Lit",
+                "Standard");
+        }
+
+        private static Renderer[] CreateOptionalVisual(
+            GameObject ownerObject,
+            Renderer fallbackRenderer,
+            GameObject visualPrefab,
+            Vector3 targetSize)
+        {
+            if (visualPrefab == null)
+            {
+                return new[] { fallbackRenderer };
+            }
+
+            GameObject visualObject = InstantiateVisualObject(visualPrefab, ownerObject.transform);
+            if (visualObject == null)
+            {
+                return new[] { fallbackRenderer };
+            }
+
+            if (fallbackRenderer != null)
+            {
+                fallbackRenderer.enabled = false;
+            }
+
+            visualObject.name = visualPrefab.name + " Visual";
+            visualObject.transform.localPosition = Vector3.zero;
+            visualObject.transform.localRotation = Quaternion.identity;
+            visualObject.transform.localScale = Vector3.one;
+
+            RemoveVisualColliders(visualObject);
+            FitVisualToSize(visualObject, targetSize);
+
+            Renderer[] renderers = visualObject.GetComponentsInChildren<Renderer>(true);
+            return renderers.Length > 0 ? renderers : new[] { fallbackRenderer };
+        }
+
+        private static void SetSharedMaterial(Renderer[] renderers, Material material)
+        {
+            if (renderers == null || material == null)
+            {
+                return;
+            }
+
+            for (int i = 0; i < renderers.Length; i++)
+            {
+                if (renderers[i] != null)
+                {
+                    renderers[i].sharedMaterial = material;
+                }
+            }
+        }
+
+        private static void RemoveVisualColliders(GameObject rootObject)
+        {
+            Collider[] colliders = rootObject.GetComponentsInChildren<Collider>(true);
+            for (int i = 0; i < colliders.Length; i++)
+            {
+                Destroy(colliders[i]);
+            }
+        }
+
+        private static void FitVisualToSize(GameObject rootObject, Vector3 targetSize)
+        {
+            Renderer[] renderers = rootObject.GetComponentsInChildren<Renderer>(true);
+            if (renderers.Length == 0)
+            {
+                return;
+            }
+
+            Bounds bounds = renderers[0].bounds;
+            for (int i = 1; i < renderers.Length; i++)
+            {
+                bounds.Encapsulate(renderers[i].bounds);
+            }
+
+            Vector3 size = bounds.size;
+            if (size.x <= 0f || size.y <= 0f || size.z <= 0f)
+            {
+                return;
+            }
+
+            rootObject.transform.localScale = new Vector3(
+                targetSize.x / size.x,
+                targetSize.y / size.y,
+                targetSize.z / size.z);
+        }
+
+        private static GameObject InstantiateVisualObject(GameObject prefab, Transform parent)
+        {
+            Object instance = Instantiate((Object)prefab, parent);
+            if (instance is GameObject gameObject)
+            {
+                return gameObject;
+            }
+
+            if (instance is Component component)
+            {
+                return component.gameObject;
+            }
+
+            if (instance != null)
+            {
+                Destroy(instance);
+            }
+
+            return null;
+        }
+    }
+}

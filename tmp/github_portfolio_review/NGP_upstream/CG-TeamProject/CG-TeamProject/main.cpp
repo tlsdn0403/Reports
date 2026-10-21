@@ -1,0 +1,1279 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include <stdlib.h>
+#include <stdio.h>
+#include <ctime>
+#include <cstdlib>
+#include <iostream>
+#include <set>
+#include "AABB.h"
+#include "Common.h"
+#include "obstacle_network.h"
+#include "collision.h"
+#include "stdafx.h"
+
+CRITICAL_SECTION g_cs_client;
+
+char* SERVERIP = (char*)"127.0.0.1";
+#define SERVERPORT 9000
+SOCKET Socket = INVALID_SOCKET; //전역 변수로 소켓 선언
+
+#pragma pack(1)
+struct character {
+	int ID;
+	glm::vec3 position;
+	glm::vec3 direction;
+	GLfloat RotationAngle;
+	GLfloat ArmLegSwingAngle;
+	bool isCollision;
+};
+#pragma pack()
+
+#pragma pack(1)
+struct GamePacket_S2C {
+	character otherPlayers[2];    // 다른 플레이어 2명
+	Moving_Obstacle bongObstacle;   // 장애물 정보
+	Moving_Obstacle doorObstacle;   // 장애물 정보
+	Rotating_Obstacle jumpbarObstacle;
+	Rotating_Obstacle vFanObstacle;
+	Rotating_Obstacle hFanObstacle;
+	int whoFinished{ -1 };              // 결승한 플레이어 ID (-1 이면 아직 결승 안함)
+};
+#pragma pack()
+Player1* P1 = nullptr;
+Player1* P2 = nullptr;
+Player1* P3 = nullptr;
+
+std::atomic<bool> count1_check, count2_check, count3_check;
+
+// 다른 클라이언트들의 캐릭터 정보 저장
+#define MAX_OTHER_PLAYERS 2
+character otherPlayers[MAX_OTHER_PLAYERS];
+bool otherPlayersActive[MAX_OTHER_PLAYERS] = { false, false };
+int whowinner = -1;	// 누가 이겼니
+
+// 캐릭터 정보를 서버에 전송하는 함수
+int sendCharacterCount = 0;
+void C2S_Character(SOCKET sock, const character& char_info)
+{
+	// 3. 서버에 패킷 전송
+	int retval = send(sock, (char*)&char_info, sizeof(char_info), 0);
+	if (sendCharacterCount++ % 100 == 0) {
+		std::cout << "\n[전송] 클라이언트 정보 전송 완료 (" << sizeof(char_info) << " 바이트)" << std::endl;
+		std::cout << "보낸 ID: " << char_info.ID << std::endl;
+		printf("  Position: (%.2f, %.2f, %.2f)\n",
+			char_info.position.x, char_info.position.y, char_info.position.z);
+		printf("  Direction: (%.2f, %.2f, %.2f)\n",
+			char_info.direction.x, char_info.direction.y, char_info.direction.z);
+		printf("  ArmLegSwingAngle: %.2f\n", char_info.ArmLegSwingAngle);
+		printf("  isCollision: %s\n\n", char_info.isCollision ? "true" : "false");
+	}
+
+	if (retval == SOCKET_ERROR) {
+		err_display("send() - C2S_Character, position");
+		return;
+	}
+
+}
+// 캐릭터 정보 업데이트
+void UpdatePlayer() {
+	// [수정] 데이터 읽기 전 락 획득 (스레드 충돌 방지)
+	EnterCriticalSection(&g_cs_client);
+	
+	// 로컬 변수로 복사해서 사용하는 것이 락 시간을 줄이는 데 좋지만, 
+	// 여기서는 간단히 락 안에서 처리합니다.
+	P2->Position = otherPlayers[0].position;
+	P2->Direction = otherPlayers[0].direction;
+	P2->RotationAngle = otherPlayers[0].RotationAngle;
+	P2->ArmLegSwingAngle = otherPlayers[0].ArmLegSwingAngle;
+
+	P3->Position = otherPlayers[1].position;
+	P3->Direction = otherPlayers[1].direction;
+	P3->RotationAngle = otherPlayers[1].RotationAngle;
+	P3->ArmLegSwingAngle = otherPlayers[1].ArmLegSwingAngle;
+
+	LeaveCriticalSection(&g_cs_client);
+	// [수정 끝]
+
+	// 모델 매트릭스 업데이트
+	P2->ModelMatrix = glm::translate(glm::mat4(1.0f), P2->Position);
+	P2->ModelMatrix = glm::rotate(P2->ModelMatrix, glm::radians(P2->RotationAngle), glm::vec3(0.0f, 1.0f, 0.0f));
+	// AABB 업데이트
+	P2->CAABB.update(P2->Position, glm::vec3(-0.7f, 0.0f, -0.72f), glm::vec3(0.7f, 1.84f, 0.63f));
+
+	// 모델 매트릭스 업데이트
+	P3->ModelMatrix = glm::translate(glm::mat4(1.0f), P3->Position);
+	P3->ModelMatrix = glm::rotate(P3->ModelMatrix, glm::radians(P3->RotationAngle), glm::vec3(0.0f, 1.0f, 0.0f));
+	// AABB 업데이트
+	P3->CAABB.update(P3->Position, glm::vec3(-0.7f, 0.0f, -0.72f), glm::vec3(0.7f, 1.84f, 0.63f));
+
+	// 충돌처리
+	handleAllPlayerCollisions(P1, P2, P3);
+
+	//충돌처리 후 다시 업데이트
+	P1->CAABB.update(P1->Position, glm::vec3(-0.7f, 0.0f, -0.72f), glm::vec3(0.7f, 1.84f, 0.63f));
+	P2->CAABB.update(P2->Position, glm::vec3(-0.7f, 0.0f, -0.72f), glm::vec3(0.7f, 1.84f, 0.63f));
+	P3->CAABB.update(P3->Position, glm::vec3(-0.7f, 0.0f, -0.72f), glm::vec3(0.7f, 1.84f, 0.63f));
+}
+
+// 다른 플레이어 정보 저장 헬퍼 함수
+void StoreOtherPlayer(const character& received_char) {
+	if (P1->ID == 0) {
+		// 내가 0번이면: 1번→[0], 2번→[1]
+		otherPlayers[received_char.ID - 1] = received_char;
+	}
+	else if (P1->ID == 1) {
+		// 내가 1번이면: 0번→[0], 2번→[1]
+		if (received_char.ID == 0)
+			otherPlayers[0] = received_char;
+		else if (received_char.ID == 2)
+			otherPlayers[1] = received_char;
+	}
+	else {
+		// 내가 2번이면: 0번→[0], 1번→[1]
+		if (received_char.ID == 0)
+			otherPlayers[0] = received_char;
+		else if (received_char.ID == 1)
+			otherPlayers[1] = received_char;
+	}
+}
+
+// [삭제됨] S2C_ReceiveGameState 함수는 이제 쓰레드 내부 로직으로 대체되었습니다.
+// 메인 루프에서 호출하지 않으므로 삭제하거나 주석 처리합니다.
+
+ClientInitInfo p1{ 1, glm::vec3(-7.0f,0.0f,0.0f), glm::vec3(1.0f, 0.0f, 0.0f) };
+ClientInitInfo p2{ 2,glm::vec3(0.0f,0.0f,0.0f),glm::vec3(1.0f, 1.0f, 0.0f) };//1번 클라 시작위치, 색깔
+ClientInitInfo p3{ 3,glm::vec3(7.0f,0.0f,0.0f),glm::vec3(0.0f, 0.0f, 1.0f) };
+
+//번호 받고 캐릭터 번호에 따라 만들기
+bool InitCharByNum() {
+	// 1. 내 번호 받기
+	int data = 0;
+	int retval = recv(Socket, (char*)&data, sizeof(data), 0);
+	if (retval <= 0) {
+		printf("서버에서 내 번호 받기 실패\n");
+		return false;
+	}
+	int order = ntohl(data); // 네트워크 엔디안 변환
+	std::cout << order << "번 째 캐릭터 입니다." << std::endl;
+
+	//순서에 따라 캐릭터 색상 설정
+	switch (order) {
+
+	case 1:
+	{
+		P1 = new Player1(p2.color);
+		P1->Position = p2.startPos;
+		P1->Position = p2.startPos;
+		P2 = new Player1(p1.color);
+		P2->Position = p1.startPos;
+		P3 = new Player1(p3.color);
+		P3->Position = p3.startPos;
+		break;
+	}
+	case 2:
+	{
+		P1 = new Player1(p1.color);
+		P1->Position = p1.startPos;
+		P2 = new Player1(p2.color);
+		P2->Position = p2.startPos;
+		P3 = new Player1(p3.color);
+		P3->Position = p3.startPos;
+
+		break;
+	}
+	case 3:
+	{
+		P1 = new Player1(p3.color);
+		P1->Position = p3.startPos;
+		P2 = new Player1(p2.color);
+		P2->Position = p2.startPos;
+		P3 = new Player1(p1.color);
+		P3->Position = p1.startPos;
+
+		break;
+	}
+	default:
+		std::cerr << "경고: 서버에서 잘못된 order(" << order << ")를 보냄\n";
+		return false; // 초기화 중단
+	}
+	//컨트롤 하는 캐릭터
+	//P1 = new Player1(P1Color);
+	//초기 위치 저장
+	P1->InitialPosition = P1->Position;
+	P2->InitialPosition = P2->Position;
+	P3->InitialPosition = P3->Position;
+
+	P1->ID = order - 1;
+	//다른 캐릭터들
+	std::cout << P1->Position.x << "," << P1->Position.y << "," << P1->Position.z << std::endl;
+	std::cout << P2->Position.x << "," << P2->Position.y << "," << P2->Position.z << std::endl;
+
+	/*
+	문제.
+	2번쨰 캐릭터가 생성되면서 첫번째 캐릭터의 위치가 바뀌는 현상 발생 한 것 같음. 아마도
+
+	*/
+	return true;
+}
+
+bool recv_Start() {	//3명 다 접속했는지 확인하고 시작하기
+	int recv_data = 0;             // 네트워크에서 받을 raw 데이터
+	int retval = recv(Socket, (char*)&recv_data, sizeof(recv_data), 0);
+
+	if (retval == SOCKET_ERROR) {
+		err_display("recv()");
+		return false; // 통신 자체가 실패
+	}
+	if (retval == 0) {
+		printf("모두 접속하지 않음\n");
+		return false;
+	}
+
+	// 엔디안 변환
+	int data = ntohl(recv_data);
+
+	// data = 1 → true, 0 → false
+	bool ready = (data == 1);
+
+	return ready;
+}
+
+// 네트워크 초기화
+bool InitNetworkConnection() {
+	WSADATA wsa;
+
+	// Winsock 초기화
+	if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0) {
+		err_quit("WSAStartup()");
+		return false;
+	}
+
+	// 소켓 생성
+	Socket = socket(AF_INET, SOCK_STREAM, 0);
+	if (Socket == INVALID_SOCKET) {
+		err_quit("socket()");
+		return false;
+	}
+
+	// 서버 주소 설정
+	struct sockaddr_in serveraddr;
+	memset(&serveraddr, 0, sizeof(serveraddr));
+	serveraddr.sin_family = AF_INET;
+	inet_pton(AF_INET, SERVERIP, &serveraddr.sin_addr);
+	serveraddr.sin_port = htons(SERVERPORT);
+
+	// 서버에 연결
+	int retval = connect(Socket, (struct sockaddr*)&serveraddr, sizeof(serveraddr));
+	if (retval == SOCKET_ERROR) {
+		err_display("connect()");
+		closesocket(Socket);
+		Socket = INVALID_SOCKET;
+		WSACleanup();
+		return false;
+	}
+
+	return true;
+}
+
+// 네트워크 정리
+void CleanupNetworkConnection() {
+	if (Socket != INVALID_SOCKET) {
+		closesocket(Socket);
+		Socket = INVALID_SOCKET;
+	}
+	WSACleanup();
+}
+// 맵
+GLuint vaoBottom, vaoArrowAndPillar, vaoEndPoint, vaoPoint;
+GLuint vboBottom[2], vboArrowAndPillar[2], vboEndPoint[2], vboPoint[2];
+Model modelBottom, modelArrowAndPillar, modelEndPoint, modelPoint;
+
+
+//checkbox
+GLuint vaoCheckBoxMap1, vboCheckBoxMap1[2], vaoCheckBoxMap2, vboCheckBoxMap2[2], vaoCheckBoxMap3, vboCheckBoxMap3[2], vaoCheckBoxMap4, vboCheckBoxMap4[2], vaoCheckBoxMap5, vboCheckBoxMap5[2];
+
+
+GLuint shaderProgramID;
+GLuint vertexShader;
+GLuint fragmentShader;
+
+
+GLfloat obstacleRotation = 0.0f;
+GLfloat DoorMove = 0.05f;
+GLfloat MaxDoorMove = 1.7f;
+
+bool moveKeyStates[256] = { false }; // 이동 키 상태
+bool arrowKeyStates[256] = { false };
+bool commandKeyStates[256] = { false }; // 명령 키 상태
+bool isObstacleRotate = true;
+
+
+bool checkCollision(const AABB& box1, const AABB& box2) {
+	return (box1.max.x > box2.min.x && box1.min.x < box2.max.x &&
+		box1.max.y > box2.min.y && box1.min.y < box2.max.y &&
+		box1.max.z > box2.min.z && box1.min.z < box2.max.z);
+}
+
+char* filetobuf(const char* file) {
+	FILE* fptr;
+	long length;
+	char* buf;
+
+	fptr = fopen(file, "rb");
+	if (!fptr)
+		return NULL;
+	fseek(fptr, 0, SEEK_END);
+	length = ftell(fptr);
+	buf = (char*)malloc(length + 1);
+	fseek(fptr, 0, SEEK_SET);
+	fread(buf, length, 1, fptr);
+	fclose(fptr);
+	buf[length] = 0;
+	return buf;
+}
+
+void make_vertexShaders();
+void make_fragmentShaders();
+void InitMap();
+
+
+GLuint make_shaderProgram();
+GLvoid drawScene();
+GLvoid Reshape(int w, int h);
+GLvoid Keyboard(unsigned char key, int x, int y);
+GLvoid KeyboardUp(unsigned char key, int x, int y);
+void SpecialKey(int key, int x, int y);
+void SpecialKeyUp(int key, int x, int y);
+GLvoid Timer(int value);
+
+int window_Width = 800;
+int window_Height = 600;
+
+bool movestart = false;
+
+// 맵
+void InitMap() {
+	InitPart("Map/bottom.obj", modelBottom, vaoBottom, vboBottom, glm::vec3(0.482f, 0.424f, 0.761f));
+	InitPart("Map/arrowAndPillar.obj", modelArrowAndPillar, vaoArrowAndPillar, vboArrowAndPillar, glm::vec3(0.49f, 0.0f, 0.871f));
+	InitPart("Map/endPoint.obj", modelEndPoint, vaoEndPoint, vboEndPoint, glm::vec3(1.0f, 0.0f, 1.0f));
+	InitPart("Map/point.obj", modelPoint, vaoPoint, vboPoint, glm::vec3(1.0f, 0.0f, 0.0f));
+}
+
+void InitCheckBoxMap1() {
+	glGenVertexArrays(1, &vaoCheckBoxMap1);
+	glBindVertexArray(vaoCheckBoxMap1);
+
+	glGenBuffers(1, vboCheckBoxMap1);
+
+	glBindBuffer(GL_ARRAY_BUFFER, vboCheckBoxMap1[0]);
+	glBufferData(GL_ARRAY_BUFFER, CheckBoxVerticesMap1.size() * sizeof(float), CheckBoxVerticesMap1.data(), GL_STATIC_DRAW);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+
+	glBindVertexArray(0);
+}
+void InitCheckBoxMap2() {
+	glGenVertexArrays(1, &vaoCheckBoxMap2);
+	glBindVertexArray(vaoCheckBoxMap2);
+
+	glGenBuffers(1, vboCheckBoxMap2);
+
+	glBindBuffer(GL_ARRAY_BUFFER, vboCheckBoxMap2[0]);
+	glBufferData(GL_ARRAY_BUFFER, CheckBoxVerticesMap2.size() * sizeof(float), CheckBoxVerticesMap2.data(), GL_STATIC_DRAW);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+
+	glBindVertexArray(0);
+}
+void InitCheckBoxMap3() {
+	glGenVertexArrays(1, &vaoCheckBoxMap3);
+	glBindVertexArray(vaoCheckBoxMap3);
+
+	glGenBuffers(1, vboCheckBoxMap3);
+
+	glBindBuffer(GL_ARRAY_BUFFER, vboCheckBoxMap3[0]);
+	glBufferData(GL_ARRAY_BUFFER, CheckBoxVerticesMap3.size() * sizeof(float), CheckBoxVerticesMap3.data(), GL_STATIC_DRAW);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+
+	glBindVertexArray(0);
+}
+void InitCheckBoxMap4() {
+	glGenVertexArrays(1, &vaoCheckBoxMap4);
+	glBindVertexArray(vaoCheckBoxMap4);
+
+	glGenBuffers(1, vboCheckBoxMap4);
+
+	glBindBuffer(GL_ARRAY_BUFFER, vboCheckBoxMap4[0]);
+	glBufferData(GL_ARRAY_BUFFER, CheckBoxVerticesMap4.size() * sizeof(float), CheckBoxVerticesMap4.data(), GL_STATIC_DRAW);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+
+	glBindVertexArray(0);
+}
+void InitCheckBoxMap5() {
+	glGenVertexArrays(1, &vaoCheckBoxMap5);
+	glBindVertexArray(vaoCheckBoxMap5);
+
+	glGenBuffers(1, vboCheckBoxMap5);
+
+	glBindBuffer(GL_ARRAY_BUFFER, vboCheckBoxMap5[0]);
+	glBufferData(GL_ARRAY_BUFFER, CheckBoxVerticesMap5.size() * sizeof(float), CheckBoxVerticesMap5.data(), GL_STATIC_DRAW);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+
+	glBindVertexArray(0);
+}
+
+// 맵 그리기
+void DrawMap(GLuint shaderPRogramID, GLint modelMatrixLocation) {
+	// 바닥
+	glm::mat4 bottomModelMatrix = glm::mat4(1.0f);
+	glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, glm::value_ptr(bottomModelMatrix));
+
+	glBindVertexArray(vaoBottom);
+	glDrawElements(GL_TRIANGLES, modelBottom.faces.size() * 3, GL_UNSIGNED_INT, 0);
+	glBindVertexArray(0);
+
+	// 화살표와 기둥
+	glm::mat4 arrowAndPillarModelMatrix = glm::mat4(1.0f);
+	glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, glm::value_ptr(arrowAndPillarModelMatrix));
+
+	glBindVertexArray(vaoArrowAndPillar);
+	glDrawElements(GL_TRIANGLES, modelArrowAndPillar.faces.size() * 3, GL_UNSIGNED_INT, 0);
+	glBindVertexArray(0);
+
+	// 결승점
+	glm::mat4 endPointModelMatrix = glm::mat4(1.0f);
+	glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, glm::value_ptr(endPointModelMatrix));
+
+	glBindVertexArray(vaoEndPoint);
+	glDrawElements(GL_TRIANGLES, modelEndPoint.faces.size() * 3, GL_UNSIGNED_INT, 0);
+	glBindVertexArray(0);
+
+	// 포인트
+	glm::mat4 pointModelMatrix = glm::mat4(1.0f);
+	glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, glm::value_ptr(pointModelMatrix));
+
+	glBindVertexArray(vaoPoint);
+	glDrawElements(GL_TRIANGLES, modelPoint.faces.size() * 3, GL_UNSIGNED_INT, 0);
+	glBindVertexArray(0);
+}
+
+// 체크박스 그리기
+void DrawMapCheckBox(GLuint shaderProgramID, GLint modelMatrixLocation) {
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	glm::mat4 checkBoxModelMatrix1 = glm::mat4(1.0f);
+	glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, glm::value_ptr(checkBoxModelMatrix1));
+	glBindVertexArray(vaoCheckBoxMap1);
+	glDrawArrays(GL_QUADS, 0, 24);
+	glBindVertexArray(0);
+
+	glm::mat4 checkBoxModelMatrix2 = glm::mat4(1.0f);
+	glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, glm::value_ptr(checkBoxModelMatrix2));
+	glBindVertexArray(vaoCheckBoxMap2);
+	glDrawArrays(GL_QUADS, 0, 24);
+	glBindVertexArray(0);
+
+	glm::mat4 checkBoxModelMatrix3 = glm::mat4(1.0f);
+	glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, glm::value_ptr(checkBoxModelMatrix3));
+	glBindVertexArray(vaoCheckBoxMap3);
+	glDrawArrays(GL_QUADS, 0, 24);
+	glBindVertexArray(0);
+
+	glm::mat4 checkBoxModelMatrix4 = glm::mat4(1.0f);
+	glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, glm::value_ptr(checkBoxModelMatrix4));
+	glBindVertexArray(vaoCheckBoxMap4);
+	glDrawArrays(GL_QUADS, 0, 24);
+	glBindVertexArray(0);
+
+	glm::mat4 checkBoxModelMatrix5 = glm::mat4(1.0f);
+	glUniformMatrix4fv(modelMatrixLocation, 1, GL_FALSE, glm::value_ptr(checkBoxModelMatrix5));
+	glBindVertexArray(vaoCheckBoxMap5);
+	glDrawArrays(GL_QUADS, 0, 24);
+	glBindVertexArray(0);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+}
+
+
+DWORD WINAPI RecvThread(LPVOID arg)
+{
+	SOCKET sock = *(SOCKET*)arg;
+	int recv_data = 0;             // 네트워크에서 받을 raw 데이터
+	
+	// [수정] 1단계: 카운트다운 수신 루프
+	while (true)
+	{
+		int retval = recv(sock, (char*)&recv_data, sizeof(recv_data), 0);
+		if (retval == SOCKET_ERROR || retval == 0) {
+			err_display("recv() - Countdown");
+			return 0; // 통신 자체가 실패
+		}
+		int data = ntohl(recv_data);
+
+		switch (data) {
+		case 3:
+			count1_check = false;
+			count2_check = false;
+			count3_check = true;
+			break;
+		case 2:
+			count1_check = false;
+			count2_check = true;
+			count3_check = false;
+			break;
+		case 1:
+			count1_check = true;
+			count2_check = false;
+			count3_check = false;
+			break;
+		case -1:
+			printf("카운트 종료 신호 받음, 게임 시작!\n");
+			count1_check = false;
+			count2_check = false;
+			count3_check = false;
+			movestart = true;
+			// 카운트다운 루프 탈출 -> 아래의 게임 상태 수신 로프로 이동
+			goto GAME_LOOP_START; 
+		default:
+			break;
+		}
+		printf("카운트: %d\n", data);
+		glutPostRedisplay();
+	}
+
+GAME_LOOP_START:
+	// [수정] 2단계: 게임 상태 수신 루프 (블로킹 recv 사용)
+	// 이 루프는 별도 스레드에서 돌기 때문에 메인 화면을 멈추지 않습니다.
+	GamePacket_S2C packet;
+	while (true)
+	{
+		int retval = recv(sock, (char*)&packet, sizeof(GamePacket_S2C), 0);
+		if (retval == SOCKET_ERROR || retval == 0) {
+			printf("서버 연결 종료됨\n");
+			break;
+		}
+
+		// 전역 변수 갱신 시 충돌 방지를 위해 락 사용
+		EnterCriticalSection(&g_cs_client);
+
+		// 다른 플레이어 정보 저장
+		otherPlayers[0] = packet.otherPlayers[0];
+		otherPlayers[1] = packet.otherPlayers[1];
+
+		// 장애물 정보 저장
+		g_bongObstacle = packet.bongObstacle;
+		g_doorObstacle = packet.doorObstacle;
+		g_jumpbarObstacle = packet.jumpbarObstacle;
+		g_verticalfanObstacle = packet.vFanObstacle;
+		g_horizontalfanObstacle = packet.hFanObstacle;
+		
+		if (packet.whoFinished != -1) {
+			whowinner = packet.whoFinished;
+			std::cout << packet.whoFinished << "번 플레이어가 이겼습니다!" << std::endl;
+		}
+
+		LeaveCriticalSection(&g_cs_client);
+
+		// 화면 갱신 요청 (부드러운 움직임을 위해)
+		glutPostRedisplay();
+	}
+
+	return 0;
+}
+
+BongGroup* Bong1 = nullptr;
+BongGroup* Bong2 = nullptr;
+HorizontalFan* HorFan1 = nullptr;
+HorizontalFan* HorFan2 = nullptr;
+HorizontalFan* HorFan3 = nullptr;
+BongGroup* JumpbarCenter = nullptr;
+Obstacle* Jumpbar1 = nullptr;
+Obstacle* Jumpbar2 = nullptr;
+Obstacle* Jumpbar3 = nullptr;
+VerticalFan* VerFan1 = nullptr;
+VerticalFan* VerFan2 = nullptr;
+VerticalFan* VerFan3 = nullptr;
+VerticalFan* VerFan4 = nullptr;
+VerticalFan* VerFan5 = nullptr;
+Door* flogDoor = nullptr;
+Obstacle* count3 = nullptr;
+Obstacle* count2 = nullptr;
+Obstacle* count1 = nullptr;
+Obstacle* win1 = nullptr;
+Obstacle* win2 = nullptr;
+Obstacle* win3 = nullptr;
+
+void main(int argc, char** argv) {
+	glutInit(&argc, argv);
+	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
+	glutInitWindowPosition(100, 100);
+	glutInitWindowSize(window_Width, window_Height);
+	glutCreateWindow("team_project");
+
+	glewExperimental = GL_TRUE;
+	glewInit();
+
+	make_shaderProgram();
+
+	// 맵
+	InitMap();
+
+	//mapcheckbox
+	InitCheckBoxMap1();
+	InitCheckBoxMap2();
+	InitCheckBoxMap3();
+	InitCheckBoxMap4();
+	InitCheckBoxMap5();
+
+	InitializeCriticalSection(&g_cs_client);
+
+	//장애물
+	std::cout << "장애물 생성중...." << std::endl;
+	Bong1 = new BongGroup(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), 0.1f, 1.6f, 0.0f);
+	InitPart("bong/bonggroup1.obj", Bong1->model, Bong1->vao, Bong1->vbo, glm::vec3(1.0f, 0.078f, 0.576f));
+	Bong1->SetAABB(bong1, bong3, bong5);
+
+	bong3 = {
+	glm::vec3(-3.169f + Bong1->Position.x, 0.0f, -33.25f), // min
+	glm::vec3(-1.169f + Bong1->Position.x,  3.6f,  -31.25f)  // max
+	};
+	Bong2 = new BongGroup(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(-1.0f, 0.0f, 0.0f), 0.1f, 1.6f, 0.0f);
+	InitPart("bong/bonggroup2.obj", Bong2->model, Bong2->vao, Bong2->vbo, glm::vec3(1.0f, 0.078f, 0.576f));
+	Bong2->SetAABB(bong2, bong4, bong6);
+
+	HorFan1 = new HorizontalFan(glm::vec3(0.0f, -0.3f, -140.0f));
+	HorFan2 = new HorizontalFan(glm::vec3(7.0f, -0.3f, -115.0f));
+	HorFan3 = new HorizontalFan(glm::vec3(-7.0f, -0.3f, -115.0f));
+	InitPart("horizontalFan/pink.obj", HorFan1->Pink->model, HorFan1->Pink->vao, HorFan1->Pink->vbo, glm::vec3(1.0f, 0.7f, 0.75f));
+	InitPart("horizontalFan/purple.obj", HorFan1->Purple->model, HorFan1->Purple->vao, HorFan1->Purple->vbo, glm::vec3(0.5f, 0.0f, 0.5f));
+	InitPart("horizontalFan/pink.obj", HorFan2->Pink->model, HorFan2->Pink->vao, HorFan2->Pink->vbo, glm::vec3(1.0f, 0.7f, 0.75f));
+	InitPart("horizontalFan/purple.obj", HorFan2->Purple->model, HorFan2->Purple->vao, HorFan2->Purple->vbo, glm::vec3(0.5f, 0.0f, 0.5f));
+
+	HorFan3->Pink = HorFan1->Pink;
+	HorFan3->Purple = HorFan1->Purple;
+	HorFan1->CAABB = horizontalFan1;
+	HorFan2->CAABB = horizontalFan2;
+	HorFan3->CAABB = horizontalFan3;
+
+
+	JumpbarCenter = new BongGroup(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f), 0.1f, 1.6f, 0.0f);
+	InitPart("jumpBong/centergroup.obj", JumpbarCenter->model, JumpbarCenter->vao, JumpbarCenter->vbo, glm::vec3(0.576f, 0.078f, 1.0f));
+	JumpbarCenter->SetAABB(barcenter1, barcenter2, barcenter3);
+
+	Jumpbar1 = new Obstacle(glm::vec3(9.5f, 0.0f, 94.93f));
+	InitPart("jumpBong/bar1.obj", Jumpbar1->model, Jumpbar1->vao, Jumpbar1->vbo, glm::vec3(0.576f, 0.078f, 1.0f));
+	Jumpbar1->SetAABB(barbar1);
+
+	Jumpbar2 = new Obstacle(glm::vec3(-0.6f, 0.0f, 94.93f));
+	InitPart("jumpBong/bar2.obj", Jumpbar2->model, Jumpbar2->vao, Jumpbar2->vbo, glm::vec3(0.576f, 0.078f, 1.0f));
+	Jumpbar2->SetAABB(barbar2);
+
+	Jumpbar3 = new Obstacle(glm::vec3(-10.5f, 0.0f, 94.93f));
+	InitPart("jumpBong/bar3.obj", Jumpbar3->model, Jumpbar3->vao, Jumpbar3->vbo, glm::vec3(0.576f, 0.078f, 1.0f));
+	Jumpbar3->SetAABB(barbar3);
+
+	VerFan1 = new VerticalFan(glm::vec3(0.0f, 3.0f, -60.0f));
+	VerFan2 = new VerticalFan(glm::vec3(-15.0f, 3.0f, -60.0f));
+	VerFan3 = new VerticalFan(glm::vec3(15.0f, 3.0f, -60.0f));
+	VerFan4 = new VerticalFan(glm::vec3(-7.5f, 3.0f, -60.0f));
+	VerFan5 = new VerticalFan(glm::vec3(7.5f, 3.0f, -60.0f));
+	InitPart("verticalFan/bar.obj", VerFan1->FanBar->model, VerFan1->FanBar->vao, VerFan1->FanBar->vbo, glm::vec3(0.5f, 0.5f, 0.5f));
+	InitPart("verticalFan/center.obj", VerFan1->FanCenter->model, VerFan1->FanCenter->vao, VerFan1->FanCenter->vbo, glm::vec3(1.0f, 0.4f, 0.7f));
+	InitPart("verticalFan/fan.obj", VerFan1->VFan->model, VerFan1->VFan->vao, VerFan1->VFan->vbo, glm::vec3(1.0f, 0.4f, 0.7f));
+	InitPart("verticalFan/fan.obj", VerFan4->VFan->model, VerFan4->VFan->vao, VerFan4->VFan->vbo, glm::vec3(1.0f, 0.4f, 0.7f));
+
+	VerticalFan* Fans[] = { VerFan2,VerFan3,VerFan4,VerFan5 };
+	for (VerticalFan* fan : Fans) {
+		fan->FanBar = VerFan1->FanBar;
+		fan->FanCenter = VerFan1->FanCenter;
+		if (fan == VerFan1 || fan == VerFan2 || fan == VerFan3)
+			fan->VFan = VerFan1->VFan;
+		else
+			fan->VFan = VerFan4->VFan;
+	}
+	VerFan1->SetAABB(verticalFan1);
+	VerFan2->SetAABB(verticalFan2);
+	VerFan3->SetAABB(verticalFan3);
+	VerFan4->SetAABB(verticalFan4);
+	VerFan5->SetAABB(verticalFan5);
+
+
+	glm::mat4 LeftdoorModelMatrix = glm::mat4(1.0f);
+	glm::mat4 RightdoorModelMatrix = glm::mat4(1.0f);
+	glm::vec3 LeftdoorGroupPosition = glm::vec3(0.0f, 0.0f, 0.0f); // 초기 위치
+	glm::vec3 LeftdoorGroupDirection = glm::vec3(-1.0f, 0.0f, 0.0f); // 초기 이동 방향 (왼쪽)
+	glm::vec3 RightdoorGroupPosition = glm::vec3(0.0f, 0.0f, 0.0f);
+	glm::vec3 RightdoorGroupDirection = glm::vec3(1.0f, 0.0f, 0.0f);
+	// 개구리문
+
+	flogDoor = new Door(glm::vec3(0.0f, 0.0f, 0.0f));
+	InitPart("frogDoor/outsidegroup.obj", flogDoor->Center->model, flogDoor->Center->vao, flogDoor->Center->vbo, glm::vec3(0.576f, 0.078f, 1.0f));
+	InitPart("frogDoor/leftdoorgroup.obj", flogDoor->LeftD->model, flogDoor->LeftD->vao, flogDoor->LeftD->vbo, glm::vec3(1.0f, 0.078f, 0.576f));
+	InitPart("frogDoor/rightdoorgroup.obj", flogDoor->RightD->model, flogDoor->RightD->vao, flogDoor->RightD->vbo, glm::vec3(1.0f, 0.078f, 0.576f));
+	flogDoor->LeftD->SetAABB(leftdoor1, leftdoor2, leftdoor3);
+	flogDoor->RightD->SetAABB(rightdoor1, rightdoor2, rightdoor3);
+
+
+	printf("[클라이언트] 서버 연결 시도...\n");
+	if (!InitNetworkConnection()) {
+		printf("[클라이언트] 서버 연결 실패! 게임을 종료합니다.\n");
+		return;
+	}
+	printf("[클라이언트] 서버 연결 성공!\n");
+
+
+
+	std::cout << "캐릭터 생성중...." << std::endl;
+	if (!InitCharByNum())
+	{
+		std::cerr << "캐릭터 초기화 실패!" << std::endl;
+		return;
+	}
+
+	count3 = new Obstacle(glm::vec3(P1->Position.x, 2.0f, 0.0f));
+	count2 = new Obstacle(glm::vec3(P1->Position.x, 2.0f, 0.0f));
+	count1 = new Obstacle(glm::vec3(P1->Position.x, 2.0f, 0.0f));
+	InitPart("map/3.obj", count3->model, count3->vao, count3->vbo, glm::vec3(1.0f, 0.5f, 0.3f));
+	InitPart("map/2.obj", count2->model, count2->vao, count2->vbo, glm::vec3(1.0f, 0.05f, 1.f));
+	InitPart("map/1.obj", count1->model, count1->vao, count1->vbo, glm::vec3(0.03f, 0.02f, 0.576f));
+
+	win3 = new Obstacle(glm::vec3(P1->Position.x, 2.0f, 0.0f));
+	win2 = new Obstacle(glm::vec3(P1->Position.x, 2.0f, 0.0f));
+	win1 = new Obstacle(glm::vec3(P1->Position.x, 2.0f, 0.0f));
+	InitPart("map/p3-win.obj", win3->model, win3->vao, win3->vbo, glm::vec3(1.0f, 0.5f, 0.3f));
+	InitPart("map/p2-win.obj", win2->model, win2->vao, win2->vbo, glm::vec3(1.0f, 0.05f, 1.f));
+	InitPart("map/p1-win.obj", win1->model, win1->vao, win1->vbo, glm::vec3(0.03f, 0.02f, 0.576f));
+
+
+	//여기서 3,2,1받을 준비 시작함. 이렇게 쓰레드 분리해야 접속 대기 중에도 그림그려짐
+	CreateThread(NULL, 0, RecvThread, &Socket, 0, NULL);
+
+	//std::cerr << " 접속 기다리는 중~..." << std::endl;
+	//while (!recv_Start()) {
+	//	//std::cerr << " 안온대 ~..." << std::endl;
+	//}
+	//printf("[클라이언트] 3명 접속 성공!\n");
+
+	glutDisplayFunc(drawScene);
+	glutReshapeFunc(Reshape);
+	glutKeyboardFunc(Keyboard);
+	glutKeyboardUpFunc(KeyboardUp);
+
+	glutSpecialFunc(SpecialKey);
+	glutSpecialUpFunc(SpecialKeyUp);
+	glutTimerFunc(16, Timer, 0);
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LESS);
+	glDisable(GL_CULL_FACE);
+
+	glutMainLoop();
+	DeleteCriticalSection(&g_cs_client);
+}
+
+
+void make_vertexShaders() {
+	GLchar* vertexSource;
+
+	vertexSource = filetobuf("vertex.glsl");
+
+	vertexShader = glCreateShader(GL_VERTEX_SHADER);
+	glShaderSource(vertexShader, 1, (const GLchar**)&vertexSource, 0);
+	glCompileShader(vertexShader);
+
+	GLint result;
+	GLchar errorLog[512];
+	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &result);
+	if (!result) {
+		glGetShaderInfoLog(vertexShader, 512, NULL, errorLog);
+		std::cerr << "ERROR: vertex shader 컴파일 실패\n" << errorLog << std::endl;
+		return;
+	}
+}
+void make_fragmentShaders() {
+	GLchar* fragmentSource;
+
+	fragmentSource = filetobuf("fragment.glsl");
+
+	fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+
+	glShaderSource(fragmentShader, 1, (const GLchar**)&fragmentSource, 0);
+	glCompileShader(fragmentShader);
+
+	GLint result;
+	GLchar errorLog[512];
+
+	glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &result);
+	if (!result) {
+		glGetShaderInfoLog(fragmentShader, 512, NULL, errorLog);
+		std::cerr << "ERROR: frag_shader 컴파일 실패\n" << errorLog << std::endl;
+		return;
+	}
+}
+GLuint make_shaderProgram() {
+	make_vertexShaders();
+	make_fragmentShaders();
+
+	shaderProgramID = glCreateProgram();
+
+	glAttachShader(shaderProgramID, vertexShader);
+	glAttachShader(shaderProgramID, fragmentShader);
+	glLinkProgram(shaderProgramID);
+
+	glDeleteShader(vertexShader);
+	glDeleteShader(fragmentShader);
+
+	glUseProgram(shaderProgramID);
+	return shaderProgramID;
+}
+
+GLvoid drawScene() {
+	glClearColor(1.0, 1.0, 1.0, 1.0f);  // 배경을 흰색으로 설정
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glUseProgram(shaderProgramID);
+
+
+	glViewport(0, 0, window_Width, window_Height); //전체화면
+	glm::vec3 camera1Position = P1->Position + glm::vec3(0.0f, 10.0f, 15.0f);
+	glm::vec3 camera1Target = P1->Position;
+
+	glm::mat4 viewMatrix1 = glm::lookAt(
+		camera1Position,  // 카메라 1 위치
+		camera1Target,    // 카메라 1 바라보는 지점
+		glm::vec3(0.0f, 1.0f, 0.0f) // 상향 벡터
+	);
+
+	GLint viewMatrixLocation = glGetUniformLocation(shaderProgramID, "viewTransform");
+	glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, glm::value_ptr(viewMatrix1));
+
+	glm::mat4 projectionMatrix1 = glm::perspective(
+		glm::radians(45.0f),
+		(float)(window_Width) / (float)window_Height,
+		0.1f,
+		10000.0f
+	);
+	GLint projMatrixLocation = glGetUniformLocation(shaderProgramID, "projectionTransform");
+	glUniformMatrix4fv(projMatrixLocation, 1, GL_FALSE, glm::value_ptr(projectionMatrix1));
+
+	GLint modelMatrixLocation = glGetUniformLocation(shaderProgramID, "modelTransform");
+
+	if (P1->Position.y < -75.0f) {
+		P1->Position = P1->InitialPosition;
+	}
+
+	DrawMap(shaderProgramID, modelMatrixLocation);
+	Bong1->Draw(shaderProgramID, modelMatrixLocation);
+	Bong2->Draw(shaderProgramID, modelMatrixLocation);
+	P1->Draw(shaderProgramID, modelMatrixLocation);
+
+	// p2 위치 동기화
+	P2->Draw(shaderProgramID, modelMatrixLocation);
+	// p3 위치 동기화
+	P3->Draw(shaderProgramID, modelMatrixLocation);
+
+	/*std::cout << "1---" << P1->Position.x << "," << P1->Position.y << "," << P1->Position.z << std::endl;
+	std::cout << "2---" << P2->Position.x << "," << P2->Position.y << "," << P2->Position.z << std::endl;
+	std::cout <<"3---"<< P3->Position.x << "," << P3->Position.y << "," << P3->Position.z << std::endl;*/
+
+
+	HorFan1->Draw(shaderProgramID, modelMatrixLocation);
+	HorFan2->Draw(shaderProgramID, modelMatrixLocation);
+	HorFan3->Draw(shaderProgramID, modelMatrixLocation);
+	JumpbarCenter->JumpBarCenterDraw(shaderProgramID, modelMatrixLocation);
+	Jumpbar1->JumpBarDraw(shaderProgramID, modelMatrixLocation);
+	Jumpbar2->JumpBarDraw(shaderProgramID, modelMatrixLocation);
+	Jumpbar3->JumpBarDraw(shaderProgramID, modelMatrixLocation);
+	VerFan1->Draw(shaderProgramID, modelMatrixLocation);
+	VerFan2->Draw(shaderProgramID, modelMatrixLocation);
+	VerFan3->Draw(shaderProgramID, modelMatrixLocation);
+	VerFan4->Draw(shaderProgramID, modelMatrixLocation);
+	VerFan5->Draw(shaderProgramID, modelMatrixLocation);
+	flogDoor->Draw(shaderProgramID, modelMatrixLocation);
+
+	//카운트다운 표시
+	if (count3_check) {
+		count3->Draw(shaderProgramID, modelMatrixLocation);
+	}
+	else if (count2_check) {
+		count2->Draw(shaderProgramID, modelMatrixLocation);
+	}
+	else if (count1_check) {
+		count1->Draw(shaderProgramID, modelMatrixLocation);
+	}
+
+	//승자 표시
+	if (whowinner != -1) {
+		switch (whowinner) {
+			case 1:
+				win1->Position = glm::vec3(P1->Position.x, P1->Position.y+ 2.0f, P1->Position.z);
+				win1->Draw(shaderProgramID, modelMatrixLocation,0.08f);
+				break;
+			case 2:
+				win2->Position = glm::vec3(P1->Position.x, P1->Position.y + 2.0f, P1->Position.z );
+				win2->Draw(shaderProgramID, modelMatrixLocation,0.08f);
+				break;
+			case 3:	
+				win3->Position = glm::vec3(P1->Position.x, P1->Position.y + 2.0f, P1->Position.z );
+				win3->Draw(shaderProgramID, modelMatrixLocation,0.08f);
+				break;
+		}
+	}
+	
+	glutSwapBuffers();
+}
+
+GLvoid Reshape(int w, int h) {
+	glViewport(0, 0, w, h);
+}
+
+GLvoid Keyboard(unsigned char key, int x, int y) {
+	if (key == 'w' || key == 'a' || key == 's' || key == 'd') {
+		moveKeyStates[key] = true;
+	}
+	else {
+		switch (key) {
+		case 'q':
+			glutLeaveMainLoop();
+			break;
+		case ' ':
+			if (!P1->IsJumping) {
+				P1->IsJumping = true;
+			}
+			break;
+		}
+	}
+	glutPostRedisplay();
+}
+
+void KeyboardUp(unsigned char key, int x, int y) {
+	if (key == 'w' || key == 'a' || key == 's' || key == 'd') {
+		moveKeyStates[key] = false;
+	}
+}
+
+void SpecialKey(int key, int x, int y) {
+	if (key == GLUT_KEY_UP || key == GLUT_KEY_DOWN || key == GLUT_KEY_LEFT || key == GLUT_KEY_RIGHT) {
+		arrowKeyStates[key] = true;
+	}
+}
+
+void SpecialKeyUp(int key, int x, int y) {
+	if (key == GLUT_KEY_UP || key == GLUT_KEY_DOWN || key == GLUT_KEY_LEFT || key == GLUT_KEY_RIGHT) {
+		arrowKeyStates[key] = false;
+	}
+}
+void MovingCharacter() {
+	if (moveKeyStates['w']) {
+		P1->Direction = glm::vec3(0.0f, 0.0f, -P1->MSpeed);
+		P1->RotationAngle = 0.0f;
+		P1->IsSwing = true;
+	}
+	else if (moveKeyStates['s']) {
+		P1->Direction = glm::vec3(0.0f, 0.0f, P1->MSpeed);
+		P1->RotationAngle = 180.0f;
+		P1->IsSwing = true;
+	}
+	else if (moveKeyStates['a']) {
+		P1->Direction = glm::vec3(-P1->MSpeed, 0.0f, 0.0f);
+		P1->RotationAngle = 90.0f;
+		P1->IsSwing = true;
+	}
+	else if (moveKeyStates['d']) {
+		P1->Direction = glm::vec3(P1->MSpeed, 0.0f, 0.0f);
+		P1->RotationAngle = -90.0f;
+		P1->IsSwing = true;
+	}
+	else {
+		P1->Direction = glm::vec3(0.0f, 0.0f, 0.0f);
+		P1->IsSwing = false;
+	}
+}
+
+GLvoid Timer(int value) {
+	if (movestart) {
+		MovingCharacter();
+	}
+	AABB maps[] = { map1, map2, map3, map4, map5 };
+	P1->IsOnMap = false;
+	for (const auto& map : maps) {
+		if (checkCollision(P1->CAABB, map)) {
+			P1->IsOnMap = true;
+			break;
+		}
+	}
+
+	// 점프 로직
+	if (P1->IsJumping) {
+		// character1Position.y += character1JumpSpeed;
+		P1->Position += glm::vec3(0.0f, P1->JSpeed, 0.0f);
+		P1->JSpeed -= P1->gravity;
+
+		if (P1->JSpeed <= 0.0f && P1->IsOnMap) {
+			P1->IsJumping = false;
+			P1->JSpeed = 0.3f;
+		}
+	}
+	else if (!P1->IsOnMap) {
+		//character1Position.y -= realGravity;
+		P1->Position += glm::vec3(0.0f, -P1->realGravity, 0.0f);
+	}
+	// 이동 처리
+	P1->Position += P1->Direction;
+
+	// 캐릭터1 모델 매트릭스 업데이트
+	P1->ModelMatrix = glm::translate(glm::mat4(1.0f), P1->Position);
+	P1->ModelMatrix = glm::rotate(P1->ModelMatrix, glm::radians(P1->RotationAngle), glm::vec3(0.0f, 1.0f, 0.0f));
+
+	// AABB 업데이트
+	P1->CAABB.update(P1->Position, glm::vec3(-0.7f, 0.0f, -0.72f), glm::vec3(0.7f, 1.84f, 0.63f));
+
+	// 팔 흔들림 업데이트
+	if (P1->IsSwing) {
+		P1->ArmLegSwingAngle += P1->SwingDirection * 2.0f;
+		if (P1->ArmLegSwingAngle >= P1->MaxSwingAngle) {
+			P1->SwingDirection = -1; // 방향 반전
+		}
+		else if (P1->ArmLegSwingAngle <= -P1->MaxSwingAngle) {
+			P1->SwingDirection = 1; // 방향 반전
+		}
+	}
+	else {
+		// 흔들림 비활성화 시 초기 상태로 복구
+		if (P1->ArmLegSwingAngle > 0.0f) {
+			P1->ArmLegSwingAngle -= 2.0f;
+			if (P1->ArmLegSwingAngle < 0.0f) P1->ArmLegSwingAngle = 0.0f;
+		}
+		else if (P1->ArmLegSwingAngle < 0.0f) {
+			P1->ArmLegSwingAngle += 2.0f;
+			if (P1->ArmLegSwingAngle > 0.0f) P1->ArmLegSwingAngle = 0.0f;
+		}
+	}
+
+	if (movestart) {
+		//전송 로직
+		if (Socket != INVALID_SOCKET && P1 != nullptr) {
+			character myCharacter;
+			myCharacter.ID = P1->ID;
+			myCharacter.position = P1->Position;
+			myCharacter.direction = P1->Direction;
+			myCharacter.RotationAngle = P1->RotationAngle;
+			myCharacter.ArmLegSwingAngle = P1->ArmLegSwingAngle;
+			myCharacter.isCollision = false;  // 필요시 나중에 수정
+
+			C2S_Character(Socket, myCharacter);
+		}
+
+		// [수정] 메인 루프에서 블로킹 recv 호출 제거
+		// S2C_ReceiveGameState(Socket); 
+		// 이제 RecvThread가 데이터를 받아 전역 변수를 갱신합니다.
+	}
+	UpdatePlayer();
+
+	// [참고] 아래 장애물 위치 갱신도 엄밀히는 락이 필요하지만, 
+	// 단순 vec3 복사이므로 큰 문제는 없을 것입니다.
+	// 완벽을 기하려면 EnterCriticalSection(&g_cs_client); ... LeaveCriticalSection(&g_cs_client); 로 감싸주세요.
+	if (Bong1) Bong1->Position = g_bongObstacle.pos1;
+	else std::cout << "[Warn] Bong1 is NULL\n";
+
+	if (Bong2) Bong2->Position = g_bongObstacle.pos2;
+	else std::cout << "[Warn] Bong2 is NULL\n";
+
+	if (Bong1) {
+		Bong1->ModelMatrix = glm::translate(glm::mat4(1.0f), Bong1->Position);
+	}
+	if (Bong2) {
+		Bong2->ModelMatrix = glm::translate(glm::mat4(1.0f), Bong2->Position);
+	}
+
+	Bong1->CAABB1.update(Bong1->Position, glm::vec3(-15.74f, 0.0f, -33.25f), glm::vec3(-13.74f, 3.6f, -31.25f));
+	Bong2->CAABB1.update(Bong2->Position, glm::vec3(-9.47f, 0.0f, -33.25f), glm::vec3(-7.47f, 3.6f, -31.25f));
+	Bong1->CAABB2.update(Bong1->Position, glm::vec3(-3.169f, 0.0f, -33.25f), glm::vec3(-1.169f, 3.6f, -31.25f));
+	Bong2->CAABB2.update(Bong2->Position, glm::vec3(3.045f, 0.0f, -33.25f), glm::vec3(5.045f, 3.6f, -31.25f));
+	Bong1->CAABB3.update(Bong1->Position, glm::vec3(9.27f, 0.0f, -33.25f), glm::vec3(11.27f, 3.6f, -31.25f));
+	Bong2->CAABB3.update(Bong2->Position, glm::vec3(14.945f, 0.0f, -33.25f), glm::vec3(16.945f, 3.6f, -31.25f));
+
+	// 장애물과의 충돌 처리
+	resolveCollision(P1, Bong1->CAABB1);
+	resolveCollision(P1, Bong1->CAABB2);
+	resolveCollision(P1, Bong1->CAABB3);
+	resolveCollision(P1, Bong2->CAABB1);
+	resolveCollision(P1, Bong2->CAABB2);
+	resolveCollision(P1, Bong2->CAABB3);
+
+
+	flogDoor->LeftD->Position = g_doorObstacle.pos1;
+	flogDoor->LeftD->Direction = g_doorObstacle.dir1;
+
+	flogDoor->RightD->Position = g_doorObstacle.pos2;
+	flogDoor->RightD->Direction = g_doorObstacle.dir2;
+
+	flogDoor->LeftD->ModelMatrix = glm::translate(glm::mat4(1.0f), flogDoor->LeftD->Position);
+	flogDoor->RightD->ModelMatrix = glm::translate(glm::mat4(1.0f), flogDoor->RightD->Position);
+
+	// 문짝 AABB 업데이트
+	flogDoor->LeftD->CAABB1.update(flogDoor->LeftD->Position, glm::vec3(-8.475f, -0.76f, -159.129f), glm::vec3(-6.4f, 2.4f, -158.53f));
+	flogDoor->LeftD->CAABB2.update(flogDoor->LeftD->Position, glm::vec3(-2.168f, -0.76f, -159.129f), glm::vec3(-0.09f, 2.4f, -158.53f));
+	flogDoor->LeftD->CAABB3.update(flogDoor->LeftD->Position, glm::vec3(4.227f, -0.76f, -159.129f), glm::vec3(6.297f, 2.4f, -158.53f));
+	flogDoor->RightD->CAABB1.update(flogDoor->RightD->Position, glm::vec3(6.408f, -0.76f, -159.129f), glm::vec3(4.38f, 2.4f, -158.53f));
+	flogDoor->RightD->CAABB2.update(flogDoor->RightD->Position, glm::vec3(-0.1f, -0.76f, -159.129f), glm::vec3(1.926f, 2.4f, -158.53f));
+	flogDoor->RightD->CAABB3.update(flogDoor->RightD->Position, glm::vec3(6.294f, -0.76f, -159.129f), glm::vec3(8.322f, 2.4f, -158.53f));
+	//AABB leftDoors[] = { leftdoor1, leftdoor2, leftdoor3 };
+	//AABB rightDoors[] = { rightdoor1, rightdoor2, rightdoor3 };
+
+	// P1과 문짝 충돌 처리
+	resolveCollision(P1, flogDoor->LeftD->CAABB1);
+	resolveCollision(P1, flogDoor->LeftD->CAABB2);
+	resolveCollision(P1, flogDoor->LeftD->CAABB3);
+	resolveCollision(P1, flogDoor->RightD->CAABB1);
+	resolveCollision(P1, flogDoor->RightD->CAABB2);
+	resolveCollision(P1, flogDoor->RightD->CAABB3);
+
+
+
+	AABB outdoors[] = { outdoor1, outdoor2, outdoor3, outdoor4 };
+	for (const auto& outdoor : outdoors) {
+		resolveCollision(P1, outdoor);
+	}
+
+
+	// 장애물 AABB 업데이트
+	HorFan1->CAABB.updateRotatedAABB(
+		glm::vec3(0.0f, -0.3f, -140.0f),  // 장애물의 중심 위치
+		glm::vec3(-6.1f, -0.3f, -0.49f), // 로컬 최소 오프셋
+		glm::vec3(6.1f, 4.4f, 0.49f),    // 로컬 최대 오프셋
+		obstacleRotation,                // 회전 각도
+		glm::vec3(0.0f, 1.0f, 0.0f)      // 회전 축
+	);
+
+	HorFan2->CAABB.updateRotatedAABB(
+		glm::vec3(7.0f, -0.3f, -115.0f),  // 장애물의 중심 위치
+		glm::vec3(-6.1f, -0.3f, -0.49f), // 로컬 최소 오프셋
+		glm::vec3(6.1f, 4.4f, 0.49f),    // 로컬 최대 오프셋
+		-obstacleRotation,                // 회전 각도
+		glm::vec3(0.0f, 1.0f, 0.0f)      // 회전 축
+	);
+
+	HorFan3->CAABB.updateRotatedAABB(
+		glm::vec3(-7.0f, -0.3f, -115.0f), // 장애물의 중심 위치
+		glm::vec3(-6.1f, -0.3f, -0.49f), // 로컬 최소 오프셋
+		glm::vec3(6.1f, 4.4f, 0.49f),    // 로컬 최대 오프셋
+		obstacleRotation,                // 회전 각도
+		glm::vec3(0.0f, 1.0f, 0.0f)      // 회전 축
+	);
+	resolveCollision(P1, HorFan1->CAABB);
+	resolveCollision(P1, HorFan2->CAABB);
+	resolveCollision(P1, HorFan3->CAABB);
+
+
+	HorizontalFan* horizontalFans[] = { HorFan1, HorFan2, HorFan3 };
+
+	for (int i = 0; i < 3; i++) {
+		if (i != 1) { // HorFan1, HorFan3
+			horizontalFans[i]->Pink->RotationAngle = g_horizontalfanObstacle.angle1;
+			horizontalFans[i]->Purple->RotationAngle = g_horizontalfanObstacle.angle1;
+		}
+		else {        // HorFan2
+			horizontalFans[i]->Pink->RotationAngle = g_horizontalfanObstacle.angle2;
+			horizontalFans[i]->Purple->RotationAngle = g_horizontalfanObstacle.angle2;
+		}
+	}
+
+	AABB barbars[] = { Jumpbar1->CAABB, Jumpbar2->CAABB, Jumpbar3->CAABB };
+	Obstacle* Bars[] = { Jumpbar1, Jumpbar2, Jumpbar3 };
+
+	if (Jumpbar1) Jumpbar1->RotationAngle = g_jumpbarObstacle.angle1;
+	if (Jumpbar2) Jumpbar2->RotationAngle = g_jumpbarObstacle.angle2;
+	if (Jumpbar3) Jumpbar3->RotationAngle = g_jumpbarObstacle.angle1;
+
+
+	Jumpbar1->CAABB.updateRotatedAABB(
+		glm::vec3(9.5f, 0.0f, 94.93f),  // 장애물의 중심 위치
+		glm::vec3(-1.5f, 0.0f, -0.3f), // 로컬 최소 오프셋
+		glm::vec3(1.5f, 3.6f, 0.3f),    // 로컬 최대 오프셋
+		g_jumpbarObstacle.angle1,                // 회전 각도
+		glm::vec3(0.0f, 1.0f, 0.0f)      // 회전 축
+	);
+	Jumpbar1->CAABB.updateRotatedAABB(
+		glm::vec3(-0.6f, 0.0f, 94.93f),  // 장애물의 중심 위치
+		glm::vec3(-1.5f, 0.0f, -0.3f), // 로컬 최소 오프셋
+		glm::vec3(1.5f, 3.6f, 0.3f),    // 로컬 최대 오프셋
+		g_jumpbarObstacle.angle2,                // 회전 각도
+		glm::vec3(0.0f, 1.0f, 0.0f)      // 회전 축
+	);
+	Jumpbar1->CAABB.updateRotatedAABB(
+		glm::vec3(-10.5f, 0.0f, 94.93f),  // 장애물의 중심 위치
+		glm::vec3(-1.5f, 0.0f, -0.3f), // 로컬 최소 오프셋
+		glm::vec3(1.5f, 3.6f, 0.3f),    // 로컬 최대 오프셋
+		g_jumpbarObstacle.angle1,                // 회전 각도
+		glm::vec3(0.0f, 1.0f, 0.0f)      // 회전 축
+	);
+	resolveCollision(P1, Jumpbar1->CAABB);
+	resolveCollision(P1, Jumpbar2->CAABB);
+	resolveCollision(P1, Jumpbar3->CAABB);
+
+	VerticalFan* verticalFans[] = { VerFan1, VerFan2, VerFan3, VerFan4, VerFan5 };
+
+	for (int i = 0; i < 5; i++)
+	{
+		if (i < 3)
+		{
+			verticalFans[i]->VFan->RotationAngle = g_verticalfanObstacle.angle1;
+		}
+
+		else
+			verticalFans[i]->VFan->RotationAngle = g_verticalfanObstacle.angle2;
+	}
+	VerFan1->CAABB.updateRotatedAABB(
+		glm::vec3(0.0f, 3.0f, -60.0f),  // 장애물의 중심 위치
+		glm::vec3(-3.5f, -0.5f, -0.5f), // 로컬 최소 오프셋
+		glm::vec3(3.5f, 3.5f, 0.5f),    // 로컬 최대 오프셋
+		g_verticalfanObstacle.angle1,                // 회전 각도
+		glm::vec3(0.0f, 1.0f, 0.0f)      // 회전 축
+	);
+	VerFan2->CAABB.updateRotatedAABB(
+		glm::vec3(-15.0f, 3.0f, -60.0f),  // 장애물의 중심 위치
+		glm::vec3(-3.5f, -0.5f, -0.5f), // 로컬 최소 오프셋
+		glm::vec3(3.5f, 3.5f, 0.5f),    // 로컬 최대 오프셋
+		g_verticalfanObstacle.angle1,                // 회전 각도
+		glm::vec3(0.0f, 1.0f, 0.0f)      // 회전 축
+	);
+	VerFan3->CAABB.updateRotatedAABB(
+		glm::vec3(15.0f, 3.0f, -60.0f),  // 장애물의 중심 위치
+		glm::vec3(-3.5f, -0.5f, -0.5f), // 로컬 최소 오프셋
+		glm::vec3(3.5f, 3.5f, 0.5f),    // 로컬 최대 오프셋
+		g_verticalfanObstacle.angle1,                // 회전 각도
+		glm::vec3(0.0f, 1.0f, 0.0f)      // 회전 축
+	);
+	VerFan4->CAABB.updateRotatedAABB(
+		glm::vec3(-7.5f, 3.0f, -60.0f),  // 장애물의 중심 위치
+		glm::vec3(-3.5f, -0.5f, -0.5f), // 로컬 최소 오프셋
+		glm::vec3(3.5f, 3.5f, 0.5f),    // 로컬 최대 오프셋
+		g_verticalfanObstacle.angle2,                // 회전 각도
+		glm::vec3(0.0f, 1.0f, 0.0f)      // 회전 축
+	);
+	VerFan5->CAABB.updateRotatedAABB(
+		glm::vec3(7.5f, 3.0f, -60.0f),  // 장애물의 중심 위치
+		glm::vec3(-3.5f, -0.5f, -0.5f), // 로컬 최소 오프셋
+		glm::vec3(3.5f, 3.5f, 0.5f),    // 로컬 최대 오프셋
+		g_verticalfanObstacle.angle2,                // 회전 각도
+		glm::vec3(0.0f, 1.0f, 0.0f)      // 회전 축
+	);
+	resolveCollision(P1, VerFan1->CAABB);
+	resolveCollision(P1, VerFan2->CAABB);
+	resolveCollision(P1, VerFan3->CAABB);
+	resolveCollision(P1, VerFan4->CAABB);
+	resolveCollision(P1, VerFan5->CAABB);
+
+	// ^ 세로팬 -------------------------------------------------------------------------------------------
+
+
+
+	// 화면 갱신
+	glutPostRedisplay();
+	glutTimerFunc(16, Timer, 0);
+}
